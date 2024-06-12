@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
@@ -14,14 +15,13 @@ func Unpack(input string) (string, error) {
 	var isBackSlash bool
 	var isDigit bool
 	for i, c := range input {
-		if c >= '0' && c <= '9' {
+		switch {
+		case unicode.IsDigit(c):
 			if i == 0 || isDigit {
 				return "", ErrInvalidString
 			}
 			if isBackSlash {
-				if letter != 0 {
-					res.WriteRune(letter)
-				}
+				AddRune(letter, &res)
 				letter = c
 				isDigit = false
 				isBackSlash = false
@@ -33,11 +33,9 @@ func Unpack(input string) (string, error) {
 				}
 				letter = 0
 			}
-		} else if c == '\\' {
+		case c == '\\':
 			isDigit = false
-			if letter != 0 {
-				res.WriteRune(letter)
-			}
+			AddRune(letter, &res)
 			if isBackSlash {
 				letter = c
 				isBackSlash = false
@@ -45,20 +43,21 @@ func Unpack(input string) (string, error) {
 				letter = 0
 				isBackSlash = true
 			}
-		} else {
+		default:
 			isDigit = false
 			if isBackSlash {
 				return "", ErrInvalidString
 			}
-			if letter != 0 {
-				res.WriteRune(letter)
-			}
+			AddRune(letter, &res)
 			letter = c
 		}
-
 	}
+	AddRune(letter, &res)
+	return res.String(), nil
+}
+
+func AddRune(letter rune, res *strings.Builder) {
 	if letter != 0 {
 		res.WriteRune(letter)
 	}
-	return res.String(), nil
 }
