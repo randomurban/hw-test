@@ -1,18 +1,21 @@
 package hw03frequencyanalysis
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
 
 func Top10(input string) []string {
 
-	tokens := strings.Fields(input)
+	r := regexp.MustCompile(`[\t\n\f\r ,.!:;(){}\[\]*_']+`)
+	tokens := r.Split(input, -1)
 	counts := map[string]int{}
 
 	for _, t := range tokens {
-		counts[t]++
-
+		if t != "-" && t != "" {
+			counts[strings.ToLower(t)]++
+		}
 	}
 
 	var keys []string
