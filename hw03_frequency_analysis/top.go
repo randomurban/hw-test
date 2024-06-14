@@ -7,7 +7,6 @@ import (
 )
 
 func Top10(input string) []string {
-
 	r := regexp.MustCompile(`[\t\n\f\r ,.!:;(){}\[\]*_']+`)
 	tokens := r.Split(input, -1)
 	counts := map[string]int{}
@@ -18,7 +17,7 @@ func Top10(input string) []string {
 		}
 	}
 
-	var keys []string
+	keys := make([]string, 0)
 	for k := range counts {
 		keys = append(keys, k)
 	}
@@ -28,7 +27,7 @@ func Top10(input string) []string {
 		return counts[keys[i]] > counts[keys[j]]
 	})
 
-	var res []string
+	res := make([]string, 0)
 	for i, k := range keys {
 		if i > 9 {
 			break
