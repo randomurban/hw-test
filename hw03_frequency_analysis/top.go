@@ -25,13 +25,11 @@ func Top10(input string) []string {
 	sort.SliceStable(keys, func(i, j int) bool {
 		if counts[keys[i]] == counts[keys[j]] {
 			return keys[i] < keys[j]
-		} else {
-			return counts[keys[i]] > counts[keys[j]]
 		}
+		return counts[keys[i]] > counts[keys[j]]
 	})
 	if len(keys) > 10 {
 		return keys[:10]
-	} else {
-		return keys
 	}
+	return keys
 }
