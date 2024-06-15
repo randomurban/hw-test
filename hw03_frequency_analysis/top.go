@@ -21,18 +21,17 @@ func Top10(input string) []string {
 	for k := range counts {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
 
 	sort.SliceStable(keys, func(i, j int) bool {
-		return counts[keys[i]] > counts[keys[j]]
-	})
-
-	res := make([]string, 0)
-	for i, k := range keys {
-		if i > 9 {
-			break
+		if counts[keys[i]] == counts[keys[j]] {
+			return keys[i] < keys[j]
+		} else {
+			return counts[keys[i]] > counts[keys[j]]
 		}
-		res = append(res, k)
+	})
+	if len(keys) > 10 {
+		return keys[:10]
+	} else {
+		return keys
 	}
-	return res
 }
