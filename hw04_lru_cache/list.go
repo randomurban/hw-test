@@ -50,7 +50,7 @@ func (l *list) PushBack(v interface{}) *ListItem {
 	return n
 }
 
-func (l *list) Remove(i *ListItem) {
+func (l *list) Disconnect(i *ListItem) {
 	prev := i.Prev
 	next := i.Next
 	if prev == nil {
@@ -63,12 +63,23 @@ func (l *list) Remove(i *ListItem) {
 	} else {
 		next.Prev = prev
 	}
-	l.length--
+}
+
+func (l *list) Remove(i *ListItem) {
+	if l.length > 0 && i != nil {
+		l.Disconnect(i)
+		l.length--
+	}
 }
 
 func (l *list) MoveToFront(i *ListItem) {
-	l.Remove(i)
-	l.PushFront(i.Value)
+	if l.length > 1 && i != nil {
+		l.Disconnect(i)
+		i.Next = l.front
+		l.front.Prev = i
+		i.Prev = nil
+		l.front = i
+	}
 }
 
 func NewList() List {

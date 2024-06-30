@@ -68,4 +68,64 @@ func TestList(t *testing.T) {
 		require.Equal(t, 20, l.Back().Value)
 
 	})
+
+	t.Run("Remove and MoveToFront on 0 element", func(t *testing.T) {
+		l := NewList()
+		l.PushBack(10)
+		l.Remove(l.Front())
+		require.Equal(t, 0, l.Len())
+		l.MoveToFront(l.Front())
+		require.Equal(t, 0, l.Len())
+
+		result := l.Back()
+		require.Nil(t, result)
+
+		l.MoveToFront(l.Back())
+		require.Equal(t, 0, l.Len())
+
+		result = l.Front()
+		require.Nil(t, result)
+
+	})
+	t.Run("MoveToFront on 1 element", func(t *testing.T) {
+		l := NewList()
+		require.Equal(t, 0, l.Len())
+
+		l.PushBack(10)
+		require.Equal(t, 1, l.Len())
+		l.MoveToFront(l.Back())
+		require.Equal(t, 1, l.Len())
+		result := l.Back()
+		require.Equal(t, 10, result.Value)
+		l.Remove(l.Back())
+		require.Equal(t, 0, l.Len())
+
+		l.PushFront(20)
+		require.Equal(t, 1, l.Len())
+		l.MoveToFront(l.Front())
+		require.Equal(t, 1, l.Len())
+		result = l.Front()
+		require.Equal(t, 20, result.Value)
+	})
+	t.Run("MoveToFront on 2 element", func(t *testing.T) {
+		l := NewList()
+		require.Equal(t, 0, l.Len())
+
+		l.PushBack(10)
+		l.PushBack(20)
+		require.Equal(t, 2, l.Len())
+		l.MoveToFront(l.Back())
+		require.Equal(t, 2, l.Len())
+		result := l.Back()
+		require.Equal(t, 10, result.Value)
+		l.Remove(l.Back())
+		require.Equal(t, 1, l.Len())
+
+		l.PushFront(30)
+		require.Equal(t, 2, l.Len())
+		l.MoveToFront(l.Front())
+		require.Equal(t, 2, l.Len())
+		result = l.Front()
+		require.Equal(t, 30, result.Value)
+	})
 }
