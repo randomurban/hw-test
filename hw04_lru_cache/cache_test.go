@@ -79,7 +79,6 @@ func TestCache(t *testing.T) {
 		val, ok = c.Get("ddd")
 		require.True(t, ok)
 		require.Equal(t, 400, val)
-
 	})
 
 	t.Run("complex purge logic", func(t *testing.T) {
@@ -119,7 +118,6 @@ func TestCache(t *testing.T) {
 		val, ok = c.Get("ddd")
 		require.True(t, ok)
 		require.Equal(t, 400, val)
-
 	})
 
 	t.Run("clear cache", func(t *testing.T) {
@@ -154,7 +152,6 @@ func TestCache(t *testing.T) {
 		val, ok = c.Get("ddd")
 		require.False(t, ok)
 		require.Nil(t, val)
-
 	})
 }
 
@@ -178,4 +175,16 @@ func TestCacheMultithreading(t *testing.T) {
 	}()
 
 	wg.Wait()
+
+	val, ok := c.Get("999999")
+	require.True(t, ok)
+	require.Equal(t, 999999, val)
+
+	val, ok = c.Get("999990")
+	require.True(t, ok)
+	require.Equal(t, 999990, val)
+
+	val, ok = c.Get("0")
+	require.False(t, ok)
+	require.Nil(t, val)
 }

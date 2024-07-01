@@ -29,38 +29,38 @@ func NewCache(capacity int) Cache {
 func (c *lruCache) Set(key Key, value interface{}) bool {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	if item, ok := c.items[key]; ok {
+	item, ok := c.items[key]
+	if ok {
 		c.queue.MoveToFront(item)
 		item.Value = value
 		return true
-	} else {
-		item = c.queue.PushFront(value)
-		c.items[key] = item
-		if len(c.items) > c.capacity {
-			tail := c.queue.Back()
-			for k, listItem := range c.items {
-				if listItem == tail {
-					delete(c.items, k)
-					break
-				}
-			}
-			if tail != nil {
-				c.queue.Remove(tail)
+	}
+	item = c.queue.PushFront(value)
+	c.items[key] = item
+	if len(c.items) > c.capacity {
+		tail := c.queue.Back()
+		for k, listItem := range c.items {
+			if listItem == tail {
+				delete(c.items, k)
+				break
 			}
 		}
-		return false
+		if tail != nil {
+			c.queue.Remove(tail)
+		}
 	}
+	return false
 }
 
 func (c *lruCache) Get(key Key) (interface{}, bool) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	if item, ok := c.items[key]; ok {
+	item, ok := c.items[key]
+	if ok {
 		c.queue.MoveToFront(item)
 		return item.Value, true
-	} else {
-		return nil, false
 	}
+	return nil, false
 }
 
 func (c *lruCache) Clear() {

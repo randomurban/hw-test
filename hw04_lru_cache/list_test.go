@@ -66,7 +66,6 @@ func TestList(t *testing.T) {
 		l.Remove(l.Back())
 		require.Equal(t, 1, l.Len())
 		require.Equal(t, 20, l.Back().Value)
-
 	})
 
 	t.Run("Remove and MoveToFront on 0 element", func(t *testing.T) {
@@ -85,7 +84,6 @@ func TestList(t *testing.T) {
 
 		result = l.Front()
 		require.Nil(t, result)
-
 	})
 	t.Run("MoveToFront on 1 element", func(t *testing.T) {
 		l := NewList()

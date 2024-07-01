@@ -89,9 +89,11 @@ func NewList() List {
 func (l *list) Len() int {
 	return l.length
 }
+
 func (l *list) Front() *ListItem {
 	return l.front
 }
+
 func (l *list) Back() *ListItem {
 	return l.back
 }
