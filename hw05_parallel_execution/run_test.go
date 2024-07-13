@@ -87,7 +87,9 @@ func Slow(iterations int) time.Duration {
 	const slowWeight = 1000000
 
 	start := time.Now()
+	a := 0
 	for i := 0; i < iterations*slowWeight; i++ {
+		a += i
 	}
 	return time.Since(start)
 }
