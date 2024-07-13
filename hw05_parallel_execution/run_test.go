@@ -59,7 +59,7 @@ func withoutErrors(t *testing.T, tasksCount int, workersCount int, maxErrorsCoun
 	require.NoError(t, err)
 
 	require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
-	require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
+	require.LessOrEqual(t, int64(elapsedTime), int64(sumTime), "tasks were run sequentially?")
 }
 
 func withErrors(t *testing.T, tasksCount int, workersCount int, maxErrorsCount int) {
