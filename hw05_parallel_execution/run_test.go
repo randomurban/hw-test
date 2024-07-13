@@ -46,6 +46,7 @@ func withoutErrors(t *testing.T, tasksCount int, workersCount int, maxErrorsCoun
 
 		tasks = append(tasks, func() error {
 			// time.Sleep(taskSleep)
+			r := r
 			Slow(r)
 			atomic.AddInt32(&runTasksCount, 1)
 			return nil
