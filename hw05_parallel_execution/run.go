@@ -27,7 +27,7 @@ func Run(tasks []Task, n, m int) error {
 		go func() {
 			defer wg.Done()
 			for task := range taskCh {
-				if int(errorCount) >= m {
+				if int(atomic.LoadInt32(&errorCount)) >= m {
 					return
 				}
 				res := task()
@@ -42,13 +42,13 @@ func Run(tasks []Task, n, m int) error {
 		for res := range resCh {
 			if res != nil {
 				atomic.AddInt32(&errorCount, 1)
-				if int(errorCount) >= m {
+				if int(atomic.LoadInt32(&errorCount)) >= m {
 					return
 				}
 			} else {
 				atomic.AddInt32(&goodCount, 1)
 			}
-			if int(goodCount+errorCount) >= len(tasks) {
+			if int(atomic.LoadInt32(&goodCount)+atomic.LoadInt32(&errorCount)) >= len(tasks) {
 				return
 			}
 		}
@@ -58,7 +58,7 @@ func Run(tasks []Task, n, m int) error {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < len(tasks); i++ {
-			if int(errorCount) >= m {
+			if int(atomic.LoadInt32(&errorCount)) >= m {
 				break
 			}
 			taskCh <- tasks[i]
@@ -67,7 +67,7 @@ func Run(tasks []Task, n, m int) error {
 	}()
 
 	wg.Wait()
-	if int(errorCount) >= m {
+	if int(atomic.LoadInt32(&errorCount)) >= m {
 		return ErrErrorsLimitExceeded
 	}
 	return nil
