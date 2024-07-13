@@ -40,11 +40,13 @@ func withoutErrors(t *testing.T, tasksCount int, workersCount int, maxErrorsCoun
 	var sumTime time.Duration
 
 	for i := 0; i < tasksCount; i++ {
-		taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
-		sumTime += taskSleep
+		// taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+		r := rand.Intn(100)
+		sumTime += Slow(r)
 
 		tasks = append(tasks, func() error {
-			time.Sleep(taskSleep)
+			// time.Sleep(taskSleep)
+			Slow(r)
 			atomic.AddInt32(&runTasksCount, 1)
 			return nil
 		})
@@ -68,7 +70,8 @@ func withErrors(t *testing.T, tasksCount int, workersCount int, maxErrorsCount i
 	for i := 0; i < tasksCount; i++ {
 		err := fmt.Errorf("error from task %d", i)
 		tasks = append(tasks, func() error {
-			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+			// time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+			Slow(rand.Intn(100))
 			atomic.AddInt32(&runTasksCount, 1)
 			return err
 		})
@@ -78,4 +81,13 @@ func withErrors(t *testing.T, tasksCount int, workersCount int, maxErrorsCount i
 
 	require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual err - %v", err)
 	require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
+}
+
+func Slow(iterations int) time.Duration {
+	const slowWeight = 1000000
+
+	start := time.Now()
+	for i := 0; i < iterations*slowWeight; i++ {
+	}
+	return time.Since(start)
 }
