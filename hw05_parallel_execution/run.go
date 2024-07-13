@@ -46,7 +46,7 @@ func Run(tasks []Task, n, m int) error {
 					return
 				}
 			} else {
-				goodCount++
+				atomic.AddInt32(&goodCount, 1)
 			}
 			if int(goodCount+errorCount) >= len(tasks) {
 				return
