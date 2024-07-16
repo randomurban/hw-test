@@ -23,6 +23,10 @@ func TestRun(t *testing.T) {
 		withErrors(t, 5, 10, 0)
 	})
 
+	t.Run("with Errors if n<=0", func(t *testing.T) {
+		withErrors(t, 5, 0, 10)
+	})
+
 	t.Run("tasks without errors", func(t *testing.T) {
 		withoutErrors(t, 50, 5, 1)
 	})

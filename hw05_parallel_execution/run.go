@@ -15,12 +15,13 @@ func Run(tasks []Task, n, m int) error {
 	if m <= 0 {
 		return ErrErrorsLimitExceeded
 	}
+	if n <= 0 {
+		return ErrErrorsLimitExceeded
+	}
 
 	wg := sync.WaitGroup{}
 	taskCh := make(chan Task, n)
-	resCh := make(chan error, n)
 	var errorCount int32
-	var goodCount int32
 
 	wg.Add(n)
 	for i := 0; i < n; i++ {
@@ -31,28 +32,13 @@ func Run(tasks []Task, n, m int) error {
 					return
 				}
 				res := task()
-				resCh <- res
+				// resCh <- res
+				if res != nil {
+					atomic.AddInt32(&errorCount, 1)
+				}
 			}
 		}()
 	}
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for res := range resCh {
-			if res != nil {
-				atomic.AddInt32(&errorCount, 1)
-				if int(atomic.LoadInt32(&errorCount)) >= m {
-					return
-				}
-			} else {
-				atomic.AddInt32(&goodCount, 1)
-			}
-			if int(atomic.LoadInt32(&goodCount)+atomic.LoadInt32(&errorCount)) >= len(tasks) {
-				return
-			}
-		}
-	}()
 
 	wg.Add(1)
 	go func() {
