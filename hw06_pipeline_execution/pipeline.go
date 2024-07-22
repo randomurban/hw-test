@@ -15,23 +15,26 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	)
 	inStage = in
 	for _, stage := range stages {
-		outStage = stage(doneFn(done, inStage))
+		outStage = stage(check(done, inStage))
 		inStage = outStage
 	}
 	return outStage
 }
 
-func doneFn(done In, in In) Out {
+func check(done In, in In) Out {
 	out := make(Bi)
 	go func() {
 		defer close(out)
-		for v := range in {
+		for {
 			select {
 			case <-done:
 				return
-			default:
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+				out <- v
 			}
-			out <- v
 		}
 	}()
 	return out
