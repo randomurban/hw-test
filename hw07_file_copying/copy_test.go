@@ -28,12 +28,12 @@ func TestCopy(t *testing.T) {
 	for _, tc := range testCases {
 		input := tc.input
 		output := tc.output
-		offset := tc.offset
 		limit := tc.limit
+		offset := tc.offset
 		outDir, outName := path.Split(output)
 		result := outDir + "res_" + outName
 
-		err := Copy(input, result, offset, limit)
+		err := Copy(input, result, limit, offset)
 		if err != nil {
 			t.Error(err.Error())
 		}
