@@ -4,12 +4,17 @@ import (
 	"errors"
 	"io"
 	"os"
+	"time"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
+
+const BufSize = 64
 
 func Copy(fromPath, toPath string, limit, offset int64) error {
 	fromFile, err := os.Open(fromPath)
@@ -23,7 +28,9 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		return err
 	}
 
-	if offset < 0 || offset > fromInfo.Size() {
+	fromSize := fromInfo.Size()
+
+	if offset < 0 || offset > fromSize {
 		return ErrOffsetExceedsFileSize
 	}
 	_, err = fromFile.Seek(offset, io.SeekStart)
@@ -31,20 +38,28 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		return err
 	}
 
+	limitTo := limit
+	if limit == 0 || limit > fromSize-offset {
+		limitTo = fromSize - offset
+	}
+
+	reader := io.LimitReader(fromFile, limitTo)
+	bar := pb.Simple.Start64(limitTo).SetRefreshRate(time.Millisecond * 10)
+	bar.Start()
+	barReader := bar.NewProxyReader(reader)
+
 	toFile, err := os.Create(toPath)
 	if err != nil {
 		return err
 	}
 	defer toFile.Close()
 
-	limitTo := limit
-	if limitTo == 0 || limitTo > fromInfo.Size()-offset {
-		limitTo = fromInfo.Size() - offset
-	}
-	_, err = io.CopyN(toFile, fromFile, limitTo)
+	_, err = io.Copy(toFile, barReader)
 	if err != nil {
 		return err
 	}
 
+	bar.Finish()
+	println()
 	return toFile.Sync()
 }
