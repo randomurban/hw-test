@@ -17,7 +17,7 @@ type TestCase struct {
 
 func TestCopy(t *testing.T) {
 	testCases := []TestCase{
-		{"testdata/input.txt", "testdata/out_offset6000_limit1000.txt", 6000, 1_000},
+		{"testdata/input.txt", "testdata/out_offset6000_limit1000.txt", 6_000, 1_000},
 		{"testdata/input.txt", "testdata/out_offset0_limit0.txt", 0, 0},
 		{"testdata/input.txt", "testdata/out_offset0_limit10.txt", 0, 10},
 		{"testdata/input.txt", "testdata/out_offset0_limit1000.txt", 0, 1_000},
@@ -38,6 +38,17 @@ func TestCopy(t *testing.T) {
 			t.Error(err.Error())
 		}
 	}
+	defer func() {
+		for _, tc := range testCases {
+			outDir, outName := path.Split(tc.output)
+			result := outDir + "res_" + outName
+			err := os.Remove(result)
+			if err != nil {
+				t.Error(err.Error())
+			}
+		}
+	}()
+
 	t.Run("check size of copy", func(t *testing.T) {
 		for _, tc := range testCases {
 			reference := tc.output
@@ -48,7 +59,6 @@ func TestCopy(t *testing.T) {
 			if err != nil {
 				t.Error(err.Error())
 			}
-			defer refFile.Close()
 
 			refStat, err := refFile.Stat()
 			if err != nil {
@@ -59,21 +69,23 @@ func TestCopy(t *testing.T) {
 			if err != nil {
 				t.Error(err.Error())
 			}
-			defer resultFile.Close()
+
 			resultStat, err := resultFile.Stat()
 			if err != nil {
 				t.Error(err.Error())
 			}
 
 			assert.Equal(t, refStat.Size(), resultStat.Size())
+
+			err = refFile.Close()
+			if err != nil {
+				t.Error(err.Error())
+			}
+
+			err = resultFile.Close()
+			if err != nil {
+				t.Error(err.Error())
+			}
 		}
 	})
-	for _, tc := range testCases {
-		outDir, outName := path.Split(tc.output)
-		result := outDir + "res_" + outName
-		err := os.Remove(result)
-		if err != nil {
-			t.Error(err.Error())
-		}
-	}
 }

@@ -18,7 +18,6 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	if err != nil {
 		return err
 	}
-	defer fromFile.Close()
 
 	fromInfo, err := fromFile.Stat()
 	if err != nil {
@@ -47,7 +46,6 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	if err != nil {
 		return err
 	}
-	defer toFile.Close()
 
 	barWriter := bar.NewProxyWriter(toFile)
 
@@ -56,8 +54,17 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		return err
 	}
 
+	err = fromFile.Close()
+	if err != nil {
+		return err
+	}
 	err = toFile.Sync()
+	if err != nil {
+		return err
+	}
 	bar.Finish()
 	println()
+
+	err = toFile.Close()
 	return err
 }
