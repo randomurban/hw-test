@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"time"
 
 	"github.com/cheggaaa/pb/v3"
 )
@@ -43,10 +42,8 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		limitTo = fromSize - offset
 	}
 
-	reader := io.LimitReader(fromFile, limitTo)
-	bar := pb.Simple.Start64(limitTo).SetRefreshRate(time.Millisecond * 10)
-	bar.Start()
-	barReader := bar.NewProxyReader(reader)
+	limitReader := io.LimitReader(fromFile, limitTo)
+	bar := pb.Simple.Start64(limitTo)
 
 	toFile, err := os.Create(toPath)
 	if err != nil {
@@ -54,12 +51,15 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	}
 	defer toFile.Close()
 
-	_, err = io.Copy(toFile, barReader)
+	barWriter := bar.NewProxyWriter(toFile)
+
+	_, err = io.Copy(barWriter, limitReader)
 	if err != nil {
 		return err
 	}
 
+	err = toFile.Sync()
 	bar.Finish()
 	println()
-	return toFile.Sync()
+	return err
 }
