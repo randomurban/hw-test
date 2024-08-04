@@ -13,8 +13,6 @@ var (
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
-const BufSize = 64
-
 func Copy(fromPath, toPath string, limit, offset int64) error {
 	fromFile, err := os.Open(fromPath)
 	if err != nil {
