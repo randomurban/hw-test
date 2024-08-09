@@ -46,11 +46,12 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 	limitReader := io.LimitReader(fromFile, limitTo)
 	bar := pb.Simple.Start64(limitTo)
 
-	toFile, err := os.Create(toPath)
+	toFile, err := os.CreateTemp("", "*.tmp")
 	if err != nil {
 		return err
 	}
 	defer toFile.Close()
+	println(toFile.Name())
 
 	barWriter := bar.NewProxyWriter(toFile)
 
@@ -59,10 +60,14 @@ func Copy(fromPath, toPath string, limit, offset int64) error {
 		return err
 	}
 
-	err = toFile.Sync()
+	err = toFile.Close()
+	if err != nil {
+		return err
+	}
 
 	bar.Finish()
 	println()
 
+	err = os.Rename(toFile.Name(), toPath)
 	return err
 }
