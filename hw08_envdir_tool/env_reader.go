@@ -30,12 +30,7 @@ func ReadDir(dir string) (Environment, error) {
 			if err != nil {
 				return nil, err
 			}
-			if value.NeedRemove {
-				// println("deleted:", name)
-				delete(res, name)
-			} else {
-				res[name] = value
-			}
+			res[name] = value
 		}
 	}
 	return res, nil
