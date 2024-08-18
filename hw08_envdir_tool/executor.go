@@ -21,9 +21,13 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 	}
 	err := c.Run()
-	if exitError, ok := err.(*exec.ExitError); ok {
-		return exitError.ExitCode()
-	} else {
-		return 0
+	if err != nil {
+		fmt.Println(err.Error())
+		if exitError, ok := err.(*exec.ExitError); ok {
+			return exitError.ExitCode()
+		} else {
+			return 111
+		}
 	}
+	return 0
 }
