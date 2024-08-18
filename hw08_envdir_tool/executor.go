@@ -15,8 +15,10 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	c.Stderr = os.Stderr
 
 	for s, value := range env {
-		sv := fmt.Sprintf("%s=%s", s, value.Value)
-		c.Env = append(c.Env, sv)
+		if !value.NeedRemove {
+			sv := fmt.Sprintf("%s=%s", s, value.Value)
+			c.Env = append(c.Env, sv)
+		}
 	}
 	err := c.Run()
 	if exitError, ok := err.(*exec.ExitError); ok {
