@@ -52,6 +52,9 @@ func read(name string) (EnvValue, error) {
 	dataLine, _, _ := strings.Cut(string(data), "\n")
 	dataZero := bytes.Replace([]byte(dataLine), []byte{0}, []byte("\n"), -1)
 	s := strings.TrimRight(string(dataZero), " \t\r")
+	if len(s) == 0 {
+		return EnvValue{"", true}, nil
+	}
 	return EnvValue{Value: s, NeedRemove: false}, nil
 }
 
