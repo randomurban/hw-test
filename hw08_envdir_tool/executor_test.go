@@ -17,7 +17,8 @@ func TestRunCmd(t *testing.T) {
 			args{
 				[]string{"bash", "-c", "./testdata/runme.sh", "arg1=1", "arg2=2"},
 				Environment{
-					"HELLO": {"bar", false},
+					"HELLO": {"\"hello\"", false},
+					"BAR":   {"bar", false},
 					"FOO":   {"   foo\nwith new line", false},
 					"UNSET": {"", true},
 					"ADDED": {"from original env", false},
