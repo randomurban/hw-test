@@ -51,6 +51,7 @@ func Test_read(t *testing.T) {
 		{"Zero Coded File", args{"testdata/env/FOO"}, EnvValue{"   foo\nwith new line", false}, false},
 		{"Quotes File", args{"testdata/env/HELLO"}, EnvValue{"\"hello\"", false}, false},
 		{"Unset multiline File", args{"testdata/env/UNSET"}, EnvValue{"", true}, false},
+		{"Error on name with '='", args{"testdata/env/UNSET=UNSET"}, EnvValue{"", false}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

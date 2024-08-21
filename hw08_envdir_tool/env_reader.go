@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,6 +38,9 @@ func ReadDir(dir string) (Environment, error) {
 }
 
 func read(name string) (EnvValue, error) {
+	if strings.ContainsRune(name, '=') {
+		return EnvValue{}, fmt.Errorf("name must not contain '='")
+	}
 	data, err := os.ReadFile(name)
 	if err != nil {
 		return EnvValue{}, err
