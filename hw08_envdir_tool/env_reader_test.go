@@ -85,6 +85,7 @@ func TestReadDir(t *testing.T) {
 		{"HELLO in testdata/env dir", args{"testdata/env", "HELLO"}, EnvValue{"\"hello\"", false}, false},
 		{"UNSET in testdata/env dir", args{"testdata/env", "UNSET"}, EnvValue{"", true}, false},
 		{"Unknown file in testdata/env dir", args{"testdata/env", "FOOBAR"}, EnvValue{"", false}, false},
+		{"Error on name with '='", args{"testdata/env_err", "ENV=ERR"}, EnvValue{"", false}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

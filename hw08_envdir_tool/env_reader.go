@@ -27,6 +27,9 @@ func ReadDir(dir string) (Environment, error) {
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			name := entry.Name()
+			if strings.ContainsRune(name, '=') {
+				return nil, fmt.Errorf("name must not contain '='")
+			}
 			value, err := read(filepath.Join(dir, name))
 			if err != nil {
 				return nil, err
@@ -38,9 +41,6 @@ func ReadDir(dir string) (Environment, error) {
 }
 
 func read(name string) (EnvValue, error) {
-	if strings.ContainsRune(name, '=') {
-		return EnvValue{}, fmt.Errorf("name must not contain '='")
-	}
 	data, err := os.ReadFile(name)
 	if err != nil {
 		return EnvValue{}, err
