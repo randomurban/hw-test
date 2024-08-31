@@ -2,6 +2,7 @@ package hw10programoptimization
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -21,7 +22,12 @@ type User struct {
 
 type DomainStat map[string]int
 
+var ErrEmptyDomainName = errors.New("empty domain name")
+
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
+	if len(domain) == 0 {
+		return nil, ErrEmptyDomainName
+	}
 	result := make(DomainStat)
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
