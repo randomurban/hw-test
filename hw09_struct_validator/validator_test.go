@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 )
@@ -42,19 +43,26 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in:          App{"ver1.0"},
+			expectedErr: ValidationErrors{{"Version", errors.New("len must be 5")}},
 		},
-		// ...
-		// Place your code here.
+		{
+			in:          App{"ver_1"},
+			expectedErr: nil,
+		},
 	}
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			tt := tt
 			t.Parallel()
-
-			// Place your code here.
-			_ = tt
+			got := Validate(tt.in)
+			var validationErr ValidationErrors
+			if errors.As(got, &validationErr) {
+				if got.Error() != tt.expectedErr.Error() {
+					t.Errorf("got %v, wanted %v", got, tt.expectedErr)
+				}
+			}
 		})
 	}
 }
