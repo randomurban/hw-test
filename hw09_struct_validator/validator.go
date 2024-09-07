@@ -66,17 +66,13 @@ func Validate(v interface{}) error {
 		switch field.Kind() {
 		case reflect.String:
 			for _, rule := range rules {
-				switch rule.name {
-				case "len":
-					if field.Len() != rule.paramNum {
-						res = append(res,
-							ValidationError{
-								vt.Field(i).Name,
-								fmt.Errorf("len must be %v", rule.paramNum),
-							})
-					}
-				default:
-					return fmt.Errorf("invalid rule: %v", rule.name)
+				errValidate := validateString(field.String(), rule)
+				if errValidate != nil {
+					res = append(res,
+						ValidationError{
+							vt.Field(i).Name,
+							errValidate,
+						})
 				}
 			}
 		default:
@@ -85,6 +81,18 @@ func Validate(v interface{}) error {
 	}
 	if len(res) > 0 {
 		return res
+	}
+	return nil
+}
+
+func validateString(field string, rule Rule) error {
+	switch rule.name {
+	case "len":
+		if len(field) != rule.paramNum {
+			return fmt.Errorf("len must be %v", rule.paramNum)
+		}
+	default:
+		return fmt.Errorf("invalid rule: %v", rule.name)
 	}
 	return nil
 }
