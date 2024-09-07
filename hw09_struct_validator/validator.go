@@ -54,19 +54,33 @@ func Validate(v interface{}) error {
 	}
 	res := ValidationErrors{}
 	for i := 0; i < vt.NumField(); i++ {
-
 		tag := vt.Field(i).Tag.Get("validate")
 		if tag == "" {
 			continue
 		}
-		rules := parseRules(tag)
-		for _, rule := range rules {
-			switch rule.name {
-			case "len":
-				if err := lenValidate(vv.Field(i), rule.param); err != nil {
-					res = append(res, ValidationError{vt.Field(i).Name, err})
+		field := vv.Field(i)
+		rules, err := parseRules(tag)
+		if err != nil {
+			return fmt.Errorf("parsing %v: %w", vt.Name(), err)
+		}
+		switch field.Kind() {
+		case reflect.String:
+			for _, rule := range rules {
+				switch rule.name {
+				case "len":
+					if field.Len() != rule.paramNum {
+						res = append(res,
+							ValidationError{
+								vt.Field(i).Name,
+								fmt.Errorf("len must be %v", rule.paramNum),
+							})
+					}
+				default:
+					return fmt.Errorf("invalid rule: %v", rule.name)
 				}
 			}
+		default:
+			return fmt.Errorf("%v is not supported type", field.Kind())
 		}
 	}
 	if len(res) > 0 {
@@ -76,38 +90,34 @@ func Validate(v interface{}) error {
 }
 
 type Rule struct {
-	name  string
-	param string
+	name     string
+	param    string
+	paramNum int
 }
 
 // var ErrInvalidTag = errors.New("invalid tag")
 
-func parseRules(tag string) []Rule {
-	var res []Rule
+func parseRules(tag string) (res []Rule, err error) {
 	for _, rule := range strings.Split(tag, "|") {
 		parts := strings.Split(rule, ":")
-		if len(parts) != 2 {
-			continue
+		switch len(parts) {
+		case 1:
+			res = append(res, Rule{strings.TrimSpace(parts[0]), "", 0})
+		case 2:
+			name := strings.TrimSpace(parts[0])
+			param := strings.TrimSpace(parts[1])
+			var paramNum int
+			if name == "len" || name == "min" || name == "max" {
+				paramNum, err = strconv.Atoi(param)
+				if err != nil {
+					return nil, fmt.Errorf("must be a number param for %s: %w", name, err)
+				}
+			}
+			res = append(res, Rule{name, param, paramNum})
+		default:
+			return nil, fmt.Errorf("invalid tag: %v", tag)
 		}
-		res = append(res, Rule{parts[0], parts[1]})
 	}
 
-	return res
-}
-
-func lenValidate(v reflect.Value, param string) error {
-	lenParam, err := strconv.Atoi(param)
-	if err != nil {
-		return err
-	}
-	switch v.Kind() {
-	case reflect.String:
-		if v.Len() != lenParam {
-			return fmt.Errorf("len must be %v", lenParam)
-		}
-		return nil
-	default:
-		return fmt.Errorf("%v is not a valid type", v.Kind())
-
-	}
+	return res, nil
 }
