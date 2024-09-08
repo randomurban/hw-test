@@ -3,6 +3,7 @@ package hw09structvalidator
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -151,7 +152,14 @@ func validateString(field string, rule Rule) error {
 			}
 		}
 		return fmt.Errorf("%v in [%v] is required", field, rule.param)
-
+	case "regexp":
+		matched, errReg := regexp.MatchString(rule.param, field)
+		if errReg != nil {
+			return fmt.Errorf("regexp err: %v", errReg)
+		}
+		if !matched {
+			return fmt.Errorf("'%v' not matched", field)
+		}
 	default:
 		return fmt.Errorf("invalid rule: %v", rule.name)
 	}
