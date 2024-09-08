@@ -64,7 +64,7 @@ func Validate(v interface{}) error {
 		rules, err := parseRules(tag)
 		if err != nil {
 			res = append(res, ValidationError{
-				Field: vt.Field(i).Name,
+				Field: fieldName,
 				Err:   fmt.Errorf("parsing %v: %w", vt.Name(), err),
 			})
 		}
@@ -92,8 +92,30 @@ func Validate(v interface{}) error {
 					}
 				}
 			}
+		case "int":
+			for _, rule := range rules {
+				errValidate = validateInt(field.Interface().(int), rule)
+				if errValidate != nil {
+					res = append(res, ValidationError{
+						fieldName,
+						errValidate,
+					})
+				}
+			}
+		case "[]int":
+			for _, element := range field.Interface().([]int) {
+				for _, rule := range rules {
+					errValidate = validateInt(element, rule)
+					if errValidate != nil {
+						res = append(res, ValidationError{
+							fieldName,
+							errValidate,
+						})
+					}
+				}
+			}
 		default:
-			errValidate = fmt.Errorf("%v is not supported type", field.Kind())
+			errValidate = fmt.Errorf("%v is not supported type", field.Type())
 			res = append(res, ValidationError{
 				Field: fieldName,
 				Err:   errValidate,
@@ -112,6 +134,35 @@ func validateString(field string, rule Rule) error {
 		if len(field) != rule.paramNum {
 			return fmt.Errorf("len must be %v", rule.paramNum)
 		}
+	case "in":
+		paramList := strings.Split(rule.param, ",")
+		for _, param := range paramList {
+			if field == param {
+				return nil
+			}
+		}
+		return fmt.Errorf("%v in [%v] is required", field, rule.param)
+
+	default:
+		return fmt.Errorf("invalid rule: %v", rule.name)
+	}
+	return nil
+}
+
+func validateInt(field int, rule Rule) error {
+	switch rule.name {
+	case "in":
+		paramList := strings.Split(rule.param, ",")
+		for _, param := range paramList {
+			paramInt, paramErr := strconv.Atoi(param)
+			if paramErr != nil {
+				return fmt.Errorf("invalid int tag element: %v", param)
+			}
+			if field == paramInt {
+				return nil
+			}
+		}
+		return fmt.Errorf("%v in [%v] is required", field, rule.param)
 	default:
 		return fmt.Errorf("invalid rule: %v", rule.name)
 	}

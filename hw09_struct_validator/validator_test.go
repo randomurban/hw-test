@@ -33,6 +33,18 @@ type (
 		Version []string `validate:"len:5"`
 	}
 
+	AppIn struct {
+		Version []string `validate:"in:ver.1,ver_1"`
+	}
+
+	AppIntWrong struct {
+		Version []int `validate:"in:ver.1,1"`
+	}
+
+	AppInt struct {
+		Version []int `validate:"in:1,2"`
+	}
+
 	Token struct {
 		Header    []byte
 		Payload   []byte
@@ -81,6 +93,39 @@ func TestValidate(t *testing.T) {
 				errors.New("len must be 5"),
 			}},
 		},
+		{
+			in: AppIn{[]string{"ver1.0", "ver.1"}},
+			expectedErr: ValidationErrors{{
+				"Version",
+				errors.New("ver1.0 in [ver.1,ver_1] is required"),
+			}},
+		},
+		{
+			in: AppIntWrong{[]int{1, 2}},
+			expectedErr: ValidationErrors{
+				{
+					"Version",
+					errors.New("invalid int tag element: ver.1"),
+				},
+				{
+					"Version",
+					errors.New("invalid int tag element: ver.1"),
+				},
+			},
+		},
+		{
+			in:          AppInt{[]int{1, 2}},
+			expectedErr: nil,
+		},
+		{
+			in: AppInt{[]int{1, 2, 3}},
+			expectedErr: ValidationErrors{
+				{
+					"Version",
+					errors.New("3 in [1,2] is required"),
+				},
+			},
+		},
 	}
 
 	for i, tt := range tests {
@@ -96,9 +141,13 @@ func TestValidate(t *testing.T) {
 			if got != nil {
 				if errors.As(got, &validationErr) {
 					if got.Error() != expErr {
-						t.Errorf("got %v, wanted %v", got, tt.expectedErr)
+						t.Errorf("got %q, wanted %q", got, tt.expectedErr)
 					}
 				} else {
+					t.Errorf("got %v, wanted %v", got, tt.expectedErr)
+				}
+			} else {
+				if tt.expectedErr != nil {
 					t.Errorf("got %v, wanted %v", got, tt.expectedErr)
 				}
 			}
