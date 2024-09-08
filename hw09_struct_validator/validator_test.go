@@ -69,6 +69,36 @@ func TestValidate(t *testing.T) {
 		in          interface{}
 		expectedErr error
 	}{
+		{User{
+			ID:     "123456789012345678901234567890123456",
+			Name:   "*skipped*",
+			Age:    18,
+			Email:  "email",
+			Role:   "admin",
+			Phones: []string{"12345678901", "phone2"},
+			meta:   json.RawMessage("{}"),
+		}, errors.New("Email: invalid rule: regexp, Phones: len must be 11")},
+
+		{User{
+			ID:     "123456789012345678901234567890123456",
+			Name:   "*skipped*",
+			Age:    18,
+			Email:  "email",
+			Role:   "admin",
+			Phones: nil,
+			meta:   nil,
+		}, errors.New("Email: invalid rule: regexp")},
+		{
+			in: AppSlice{[]string{""}},
+			expectedErr: ValidationErrors{{
+				"Version",
+				errors.New("len must be 5"),
+			}},
+		},
+		{
+			in:          AppSlice{[]string{}},
+			expectedErr: nil,
+		},
 		{
 			in:          Token{[]byte{}, []byte{}, []byte{}},
 			expectedErr: nil,

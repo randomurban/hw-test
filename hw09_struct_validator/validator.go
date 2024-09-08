@@ -29,7 +29,7 @@ func (v ValidationErrors) Error() string {
 		res.WriteString(err.Error())
 
 		if i < len(v)-1 {
-			res.WriteString(",")
+			res.WriteString(", ")
 		}
 	}
 	return res.String()
@@ -69,8 +69,8 @@ func Validate(v interface{}) error {
 			})
 		}
 		var errValidate error
-		switch field.Type().String() {
-		case "string":
+		switch field.Kind() {
+		case reflect.String:
 			for _, rule := range rules {
 				errValidate = validateString(field.String(), rule)
 				if errValidate != nil {
@@ -80,19 +80,7 @@ func Validate(v interface{}) error {
 					})
 				}
 			}
-		case "[]string":
-			for _, element := range field.Interface().([]string) {
-				for _, rule := range rules {
-					errValidate = validateString(element, rule)
-					if errValidate != nil {
-						res = append(res, ValidationError{
-							fieldName,
-							errValidate,
-						})
-					}
-				}
-			}
-		case "int":
+		case reflect.Int:
 			for _, rule := range rules {
 				errValidate = validateInt(field.Interface().(int), rule)
 				if errValidate != nil {
@@ -102,18 +90,39 @@ func Validate(v interface{}) error {
 					})
 				}
 			}
-		case "[]int":
-			for _, element := range field.Interface().([]int) {
-				for _, rule := range rules {
-					errValidate = validateInt(element, rule)
-					if errValidate != nil {
-						res = append(res, ValidationError{
-							fieldName,
-							errValidate,
-						})
+		case reflect.Slice:
+			for j := 0; j < field.Len(); j++ {
+				item := field.Index(j)
+				switch item.Kind() {
+				case reflect.String:
+					for _, rule := range rules {
+						errValidate = validateString(item.Interface().(string), rule)
+						if errValidate != nil {
+							res = append(res, ValidationError{
+								fieldName,
+								errValidate,
+							})
+						}
 					}
+				case reflect.Int:
+					for _, rule := range rules {
+						errValidate = validateInt(item.Interface().(int), rule)
+						if errValidate != nil {
+							res = append(res, ValidationError{
+								fieldName,
+								errValidate,
+							})
+						}
+					}
+				default:
+					errValidate = fmt.Errorf("%v is not supported slice type", field.Type())
+					res = append(res, ValidationError{
+						Field: fieldName,
+						Err:   errValidate,
+					})
 				}
 			}
+
 		default:
 			errValidate = fmt.Errorf("%v is not supported type", field.Type())
 			res = append(res, ValidationError{
