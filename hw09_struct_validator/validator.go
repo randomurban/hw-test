@@ -67,73 +67,38 @@ func Validate(v interface{}) error {
 				Err:   fmt.Errorf("parsing %v: %w", vt.Name(), err),
 			})
 		}
-		var errValidate error
-		switch field.Kind() {
-		case reflect.String:
-			for _, rule := range rules {
-				errValidate = validateString(field.String(), rule)
-				if errValidate != nil {
-					res = append(res, ValidationError{
-						fieldName,
-						errValidate,
-					})
-				}
-			}
-		case reflect.Int:
-			for _, rule := range rules {
-				errValidate = validateInt(field.Interface().(int), rule)
-				if errValidate != nil {
-					res = append(res, ValidationError{
-						fieldName,
-						errValidate,
-					})
-				}
-			}
-		case reflect.Slice:
+		if field.Kind() == reflect.Slice {
 			for j := 0; j < field.Len(); j++ {
 				item := field.Index(j)
-				switch item.Kind() {
-				case reflect.String:
-					for _, rule := range rules {
-						errValidate = validateString(item.Interface().(string), rule)
-						if errValidate != nil {
-							res = append(res, ValidationError{
-								fieldName,
-								errValidate,
-							})
-						}
-					}
-				case reflect.Int:
-					for _, rule := range rules {
-						errValidate = validateInt(item.Interface().(int), rule)
-						if errValidate != nil {
-							res = append(res, ValidationError{
-								fieldName,
-								errValidate,
-							})
-						}
-					}
-				default:
-					errValidate = fmt.Errorf("%v is not supported slice type", field.Type())
-					res = append(res, ValidationError{
-						Field: fieldName,
-						Err:   errValidate,
-					})
-				}
+				res = checkRule(rules, item, res, fieldName)
 			}
-
-		default:
-			errValidate = fmt.Errorf("%v is not supported type", field.Type())
-			res = append(res, ValidationError{
-				Field: fieldName,
-				Err:   errValidate,
-			})
+		} else {
+			res = checkRule(rules, field, res, fieldName)
 		}
 	}
 	if len(res) > 0 {
 		return res
 	}
 	return nil
+}
+
+func checkRule(rules []Rule, field reflect.Value, res ValidationErrors, fieldName string) ValidationErrors {
+	var errValidate error
+	for _, rule := range rules {
+		if field.Kind() == reflect.String {
+			errValidate = validateString(field.String(), rule)
+		}
+		if field.Kind() == reflect.Int {
+			errValidate = validateInt(field.Interface().(int), rule)
+		}
+		if errValidate != nil {
+			res = append(res, ValidationError{
+				fieldName,
+				errValidate,
+			})
+		}
+	}
+	return res
 }
 
 func validateString(field string, rule Rule) error {

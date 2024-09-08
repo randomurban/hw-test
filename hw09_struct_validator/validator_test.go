@@ -184,10 +184,12 @@ func TestValidate(t *testing.T) {
 			got := Validate(tt.in)
 			var validationErr ValidationErrors
 			if got != nil {
-				if errors.As(got, &validationErr) {
-					if got.Error() != expErr {
-						t.Errorf("got %q, wanted %v", got, tt.expectedErr)
-					}
+				if errors.As(got, &validationErr) && got.Error() != expErr {
+					t.Errorf("got %q, wanted %v", got, tt.expectedErr)
+				}
+			} else {
+				if tt.expectedErr != nil {
+					t.Errorf("got nil, wanted %v", tt.expectedErr)
 				}
 			}
 		})
