@@ -36,11 +36,10 @@ func (v ValidationErrors) Error() string {
 	return res.String()
 }
 
-func (v ValidationErrors) Unwrap() []error {
+func (v ValidationErrors) Unwrap() (errs []error) {
 	if len(v) == 0 {
 		return nil
 	}
-	var errs []error
 	for _, err := range v {
 		errs = append(errs, err.Err)
 	}
@@ -55,7 +54,6 @@ func Validate(v interface{}) error {
 	}
 	res := ValidationErrors{}
 	for i := 0; i < vt.NumField(); i++ {
-
 		tag := vt.Field(i).Tag.Get("validate")
 		if tag == "" {
 			continue
@@ -155,7 +153,7 @@ func validateString(field string, rule Rule) error {
 	case "regexp":
 		matched, errReg := regexp.MatchString(rule.param, field)
 		if errReg != nil {
-			return fmt.Errorf("regexp err: %v", errReg)
+			return fmt.Errorf("regexp err: %w", errReg)
 		}
 		if !matched {
 			return fmt.Errorf("'%v' not matched", field)
