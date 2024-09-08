@@ -70,6 +70,18 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
+			in:          Token{[]byte{}, []byte{}, []byte{}},
+			expectedErr: nil,
+		},
+		{
+			in:          Response{200, "empty"},
+			expectedErr: nil,
+		},
+		{
+			in:          Response{100, "empty"},
+			expectedErr: ValidationErrors{{"Code", errors.New("100 in [200,404,500] is required")}},
+		},
+		{
 			in:          App{"ver1.0"},
 			expectedErr: ValidationErrors{{"Version", errors.New("len must be 5")}},
 		},
@@ -163,7 +175,7 @@ func TestValidate(t *testing.T) {
 			if got != nil {
 				if errors.As(got, &validationErr) {
 					if got.Error() != expErr {
-						t.Errorf("got %q, wanted %q", got, tt.expectedErr)
+						t.Errorf("got %q, wanted %v", got, tt.expectedErr)
 					}
 				} else {
 					t.Errorf("got %v, wanted %v", got, tt.expectedErr)
