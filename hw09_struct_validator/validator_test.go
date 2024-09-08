@@ -25,6 +25,14 @@ type (
 		Version string `validate:"len:5"`
 	}
 
+	AppWrong struct {
+		Version string `validate:"len:five"`
+	}
+
+	AppSlice struct {
+		Version []string `validate:"len:5"`
+	}
+
 	Token struct {
 		Header    []byte
 		Payload   []byte
@@ -50,16 +58,47 @@ func TestValidate(t *testing.T) {
 			in:          App{"ver_1"},
 			expectedErr: nil,
 		},
+		{
+			in: AppWrong{"ver_1"},
+			expectedErr: ValidationErrors{
+				{
+					"Version",
+					errors.New("parsing AppWrong: number param for len: strconv.Atoi: parsing \"five\": invalid syntax"),
+				},
+			},
+		},
+		{
+			in: AppSlice{[]string{"ver1.0", "ver2.0"}},
+			expectedErr: ValidationErrors{{
+				"Version",
+				errors.New("len must be 5"),
+			}, {"Version", errors.New("len must be 5")}},
+		},
+		{
+			in: AppSlice{[]string{"ver1.0", "ver.2"}},
+			expectedErr: ValidationErrors{{
+				"Version",
+				errors.New("len must be 5"),
+			}},
+		},
 	}
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			tt := tt
 			t.Parallel()
+			var expErr string
+			if tt.expectedErr != nil {
+				expErr = tt.expectedErr.Error()
+			}
 			got := Validate(tt.in)
 			var validationErr ValidationErrors
-			if errors.As(got, &validationErr) {
-				if got.Error() != tt.expectedErr.Error() {
+			if got != nil {
+				if errors.As(got, &validationErr) {
+					if got.Error() != expErr {
+						t.Errorf("got %v, wanted %v", got, tt.expectedErr)
+					}
+				} else {
 					t.Errorf("got %v, wanted %v", got, tt.expectedErr)
 				}
 			}

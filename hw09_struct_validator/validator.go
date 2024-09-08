@@ -54,29 +54,50 @@ func Validate(v interface{}) error {
 	}
 	res := ValidationErrors{}
 	for i := 0; i < vt.NumField(); i++ {
+
 		tag := vt.Field(i).Tag.Get("validate")
 		if tag == "" {
 			continue
 		}
 		field := vv.Field(i)
+		fieldName := vt.Field(i).Name
 		rules, err := parseRules(tag)
 		if err != nil {
-			return fmt.Errorf("parsing %v: %w", vt.Name(), err)
+			res = append(res, ValidationError{
+				Field: vt.Field(i).Name,
+				Err:   fmt.Errorf("parsing %v: %w", vt.Name(), err),
+			})
 		}
-		switch field.Kind() {
-		case reflect.String:
+		var errValidate error
+		switch field.Type().String() {
+		case "string":
 			for _, rule := range rules {
-				errValidate := validateString(field.String(), rule)
+				errValidate = validateString(field.String(), rule)
 				if errValidate != nil {
-					res = append(res,
-						ValidationError{
-							vt.Field(i).Name,
+					res = append(res, ValidationError{
+						fieldName,
+						errValidate,
+					})
+				}
+			}
+		case "[]string":
+			for _, element := range field.Interface().([]string) {
+				for _, rule := range rules {
+					errValidate = validateString(element, rule)
+					if errValidate != nil {
+						res = append(res, ValidationError{
+							fieldName,
 							errValidate,
 						})
+					}
 				}
 			}
 		default:
-			return fmt.Errorf("%v is not supported type", field.Kind())
+			errValidate = fmt.Errorf("%v is not supported type", field.Kind())
+			res = append(res, ValidationError{
+				Field: fieldName,
+				Err:   errValidate,
+			})
 		}
 	}
 	if len(res) > 0 {
@@ -118,7 +139,7 @@ func parseRules(tag string) (res []Rule, err error) {
 			if name == "len" || name == "min" || name == "max" {
 				paramNum, err = strconv.Atoi(param)
 				if err != nil {
-					return nil, fmt.Errorf("must be a number param for %s: %w", name, err)
+					return nil, fmt.Errorf("number param for %s: %w", name, err)
 				}
 			}
 			res = append(res, Rule{name, param, paramNum})
