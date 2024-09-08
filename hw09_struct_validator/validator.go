@@ -163,6 +163,14 @@ func validateInt(field int, rule Rule) error {
 			}
 		}
 		return fmt.Errorf("%v in [%v] is required", field, rule.param)
+	case "min":
+		if field < rule.paramNum {
+			return fmt.Errorf("must be minimum %v", rule.paramNum)
+		}
+	case "max":
+		if field > rule.paramNum {
+			return fmt.Errorf("must be maximum %v", rule.paramNum)
+		}
 	default:
 		return fmt.Errorf("invalid rule: %v", rule.name)
 	}

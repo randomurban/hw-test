@@ -44,6 +44,13 @@ type (
 	AppInt struct {
 		Version []int `validate:"in:1,2"`
 	}
+	AppMin struct {
+		Version []int `validate:"min:10"`
+	}
+
+	AppMax struct {
+		Version []int `validate:"max:20"`
+	}
 
 	Token struct {
 		Header    []byte
@@ -125,6 +132,21 @@ func TestValidate(t *testing.T) {
 					errors.New("3 in [1,2] is required"),
 				},
 			},
+		},
+
+		{
+			in: AppMin{[]int{1, 10}},
+			expectedErr: ValidationErrors{{
+				"Version",
+				errors.New("must be minimum 10"),
+			}},
+		},
+		{
+			in: AppMax{[]int{10, 30}},
+			expectedErr: ValidationErrors{{
+				"Version",
+				errors.New("must be maximum 20"),
+			}},
 		},
 	}
 
