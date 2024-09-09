@@ -1,6 +1,7 @@
 package hw09structvalidator
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -47,6 +48,7 @@ func (v ValidationErrors) Unwrap() (errs []error) {
 }
 
 func Validate(v interface{}) error {
+	var checkRes ValidationError
 	vt := reflect.TypeOf(v)
 	vv := reflect.ValueOf(v)
 	if vt.Kind() != reflect.Struct {
@@ -62,18 +64,23 @@ func Validate(v interface{}) error {
 		fieldName := vt.Field(i).Name
 		rules, err := parseRules(tag)
 		if err != nil {
-			res = append(res, ValidationError{
-				Field: fieldName,
-				Err:   fmt.Errorf("parsing %v: %w", vt.Name(), err),
-			})
+			return fmt.Errorf("parsing %v: %w", vt.Name(), err)
 		}
 		if field.Kind() == reflect.Slice {
 			for j := 0; j < field.Len(); j++ {
 				item := field.Index(j)
-				res = checkRule(rules, item, res, fieldName)
+				checkRes, err = checkRule(rules, item, fieldName)
+				if err != nil {
+					return fmt.Errorf("parsing %v: %w", vt.Name(), err)
+				}
+				res = append(res, checkRes)
 			}
 		} else {
-			res = checkRule(rules, field, res, fieldName)
+			checkRes, err = checkRule(rules, field, fieldName)
+			if err != nil {
+				return fmt.Errorf("parsing %v: %w", vt.Name(), err)
+			}
+			res = append(res, checkRes)
 		}
 	}
 	if len(res) > 0 {
@@ -82,8 +89,10 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func checkRule(rules []Rule, field reflect.Value, res ValidationErrors, fieldName string) ValidationErrors {
+func checkRule(rules []Rule, field reflect.Value, fieldName string) (ValidationError, error) {
 	var errValidate error
+	var errParsing ParsingError
+	var res ValidationError
 	for _, rule := range rules {
 		if field.Kind() == reflect.String {
 			errValidate = validateString(field.String(), rule)
@@ -92,13 +101,16 @@ func checkRule(rules []Rule, field reflect.Value, res ValidationErrors, fieldNam
 			errValidate = validateInt(field.Interface().(int), rule)
 		}
 		if errValidate != nil {
-			res = append(res, ValidationError{
+			if errors.As(errValidate, &errParsing) {
+				return ValidationError{}, errParsing
+			}
+			res = ValidationError{
 				fieldName,
 				errValidate,
-			})
+			}
 		}
 	}
-	return res
+	return res, nil
 }
 
 func validateString(field string, rule Rule) error {
@@ -116,15 +128,11 @@ func validateString(field string, rule Rule) error {
 		}
 		return fmt.Errorf("%v in [%v] is required", field, rule.param)
 	case "regexp":
-		matched, errReg := regexp.MatchString(rule.param, field)
-		if errReg != nil {
-			return fmt.Errorf("regexp err: %w", errReg)
-		}
-		if !matched {
+		if !rule.re.MatchString(field) {
 			return fmt.Errorf("'%v' not matched", field)
 		}
 	default:
-		return fmt.Errorf("invalid rule: %v", rule.name)
+		return ParsingError{"illegal tag in string: " + rule.name}
 	}
 	return nil
 }
@@ -136,7 +144,7 @@ func validateInt(field int, rule Rule) error {
 		for _, param := range paramList {
 			paramInt, paramErr := strconv.Atoi(param)
 			if paramErr != nil {
-				return fmt.Errorf("invalid int tag element: %v", param)
+				return ParsingError{"invalid int tag element: " + param}
 			}
 			if field == paramInt {
 				return nil
@@ -152,7 +160,7 @@ func validateInt(field int, rule Rule) error {
 			return fmt.Errorf("must be maximum %v", rule.paramNum)
 		}
 	default:
-		return fmt.Errorf("invalid rule: %v", rule.name)
+		return ParsingError{"illegal tag in int: " + rule.name}
 	}
 	return nil
 }
@@ -161,29 +169,40 @@ type Rule struct {
 	name     string
 	param    string
 	paramNum int
+	re       *regexp.Regexp
 }
 
-// var ErrInvalidTag = errors.New("invalid tag")
+type ParsingError struct {
+	s string
+}
+
+func (e ParsingError) Error() string {
+	return e.s
+}
 
 func parseRules(tag string) (res []Rule, err error) {
 	for _, rule := range strings.Split(tag, "|") {
 		parts := strings.Split(rule, ":")
 		switch len(parts) {
 		case 1:
-			res = append(res, Rule{strings.TrimSpace(parts[0]), "", 0})
+			res = append(res, Rule{strings.TrimSpace(parts[0]), "", 0, nil})
 		case 2:
 			name := strings.TrimSpace(parts[0])
 			param := strings.TrimSpace(parts[1])
+			re, reErr := regexp.Compile(param)
+			if reErr != nil {
+				return nil, reErr
+			}
 			var paramNum int
 			if name == "len" || name == "min" || name == "max" {
 				paramNum, err = strconv.Atoi(param)
 				if err != nil {
-					return nil, fmt.Errorf("number param for %s: %w", name, err)
+					return nil, ParsingError{"invalid number param for " + name + ": " + err.Error()}
 				}
 			}
-			res = append(res, Rule{name, param, paramNum})
+			res = append(res, Rule{name, param, paramNum, re})
 		default:
-			return nil, fmt.Errorf("invalid tag: %v", tag)
+			return nil, ParsingError{"invalid tag: " + tag}
 		}
 	}
 

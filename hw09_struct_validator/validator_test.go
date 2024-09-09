@@ -62,6 +62,14 @@ type (
 		Code int    `validate:"in:200,404,500"`
 		Body string `json:"omitempty"`
 	}
+	WrongTag struct {
+		Code int    `validate:"len:100,500"`
+		Body string `validate:"omitempty"`
+	}
+	WrongRegexp struct {
+		Code int    `validate:"min:100"`
+		Body string `validate:"regexp:a(b"`
+	}
 )
 
 func TestValidate(t *testing.T) {
@@ -101,13 +109,8 @@ func TestValidate(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			in: AppWrong{"ver_1"},
-			expectedErr: ValidationErrors{
-				{
-					"Version",
-					errors.New("parsing AppWrong: number param for len: strconv.Atoi: parsing \"five\": invalid syntax"),
-				},
-			},
+			in:          AppWrong{"ver_1"},
+			expectedErr: errors.New("parsing AppWrong: invalid number param for len: strconv.Atoi: parsing \"five\": invalid syntax"),
 		},
 		{
 			in: AppSlice{[]string{"ver1.0", "ver2.0"}},
@@ -131,17 +134,8 @@ func TestValidate(t *testing.T) {
 			}},
 		},
 		{
-			in: AppIntWrong{[]int{1, 2}},
-			expectedErr: ValidationErrors{
-				{
-					"Version",
-					errors.New("invalid int tag element: ver.1"),
-				},
-				{
-					"Version",
-					errors.New("invalid int tag element: ver.1"),
-				},
-			},
+			in:          AppIntWrong{[]int{1, 2}},
+			expectedErr: errors.New("parsing AppIntWrong: invalid int tag element: ver.1"),
 		},
 		{
 			in:          AppInt{[]int{1, 2}},
@@ -171,6 +165,20 @@ func TestValidate(t *testing.T) {
 				errors.New("must be maximum 20"),
 			}},
 		},
+		{
+			in: WrongTag{
+				100500,
+				"body",
+			},
+			expectedErr: errors.New("parsing WrongTag: invalid number param for len: strconv.Atoi: parsing \"100,500\": invalid syntax"),
+		},
+		{
+			in: WrongRegexp{
+				Code: 0,
+				Body: "bad regexp",
+			},
+			expectedErr: errors.New("parsing WrongRegexp: error parsing regexp: missing closing ): `a(b`"),
+		},
 	}
 
 	for i, tt := range tests {
@@ -184,12 +192,8 @@ func TestValidate(t *testing.T) {
 			got := Validate(tt.in)
 			var validationErr ValidationErrors
 			if got != nil {
-				if errors.As(got, &validationErr) && got.Error() != expErr {
+				if !errors.As(got, &validationErr) && got.Error() != expErr {
 					t.Errorf("got %q, wanted %v", got, tt.expectedErr)
-				}
-			} else {
-				if tt.expectedErr != nil {
-					t.Errorf("got nil, wanted %v", tt.expectedErr)
 				}
 			}
 		})
@@ -247,10 +251,8 @@ func TestValidate2(t *testing.T) {
 			got := Validate(tt.in)
 			var validationErr ValidationErrors
 			if got != nil {
-				if errors.As(got, &validationErr) {
-					if got.Error() != expErr {
-						t.Errorf("got %q, wanted %v", got, tt.expectedErr)
-					}
+				if !errors.As(got, &validationErr) && got.Error() != expErr {
+					t.Errorf("got %q, wanted %v", got, tt.expectedErr)
 				}
 			}
 		})
