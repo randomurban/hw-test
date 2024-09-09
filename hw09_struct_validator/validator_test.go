@@ -109,8 +109,9 @@ func TestValidate(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			in:          AppWrong{"ver_1"},
-			expectedErr: errors.New("parsing AppWrong: invalid number param for len: strconv.Atoi: parsing \"five\": invalid syntax"),
+			in: AppWrong{"ver_1"},
+			expectedErr: errors.New(
+				"parsing AppWrong: invalid number param for len: strconv.Atoi: parsing \"five\": invalid syntax"),
 		},
 		{
 			in: AppSlice{[]string{"ver1.0", "ver2.0"}},
@@ -170,7 +171,8 @@ func TestValidate(t *testing.T) {
 				100500,
 				"body",
 			},
-			expectedErr: errors.New("parsing WrongTag: invalid number param for len: strconv.Atoi: parsing \"100,500\": invalid syntax"),
+			expectedErr: errors.New(
+				"parsing WrongTag: invalid number param for len: strconv.Atoi: parsing \"100,500\": invalid syntax"),
 		},
 		{
 			in: WrongRegexp{
