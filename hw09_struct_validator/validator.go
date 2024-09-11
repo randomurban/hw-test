@@ -183,27 +183,36 @@ func (e ParsingError) Error() string {
 func parseRules(tag string) (res []Rule, err error) {
 	for _, rule := range strings.Split(tag, "|") {
 		parts := strings.Split(rule, ":")
-		switch len(parts) {
-		case 1:
-			res = append(res, Rule{strings.TrimSpace(parts[0]), "", 0, nil})
-		case 2:
-			name := strings.TrimSpace(parts[0])
-			param := strings.TrimSpace(parts[1])
-			re, reErr := regexp.Compile(param)
+		name := strings.TrimSpace(parts[0])
+		var param string
+		var re *regexp.Regexp
+		var paramNum int
+
+		if len(parts) != 2 {
+			return nil, ParsingError{"invalid tag: " + tag}
+		}
+		param = strings.TrimSpace(parts[1])
+
+		switch name {
+		case "in":
+
+		case "len", "min", "max":
+			paramNum, err = strconv.Atoi(param)
+			if err != nil {
+				return nil, ParsingError{"invalid number param for " + name + ": " + err.Error()}
+			}
+
+		case "regexp":
+			var reErr error
+			re, reErr = regexp.Compile(param)
 			if reErr != nil {
 				return nil, reErr
 			}
-			var paramNum int
-			if name == "len" || name == "min" || name == "max" {
-				paramNum, err = strconv.Atoi(param)
-				if err != nil {
-					return nil, ParsingError{"invalid number param for " + name + ": " + err.Error()}
-				}
-			}
-			res = append(res, Rule{name, param, paramNum, re})
+
 		default:
 			return nil, ParsingError{"invalid tag: " + tag}
 		}
+		res = append(res, Rule{name, param, paramNum, re})
 	}
 
 	return res, nil
