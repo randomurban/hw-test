@@ -15,7 +15,7 @@ func main() {
 	var host string
 	var port int
 	var timeout time.Duration
-	pflag.DurationVar(&timeout, "timeout", 5*time.Second, "Timeout")
+	pflag.DurationVar(&timeout, "timeout", 10*time.Second, "Timeout")
 	pflag.Parse()
 	var err error
 	host = pflag.Arg(0)
@@ -28,6 +28,7 @@ func main() {
 	}
 	fmt.Println("host:", host)
 	fmt.Println("port:", port)
+	fmt.Println("timeout:", timeout)
 }
 
 func usageAndExit(msg string) {
