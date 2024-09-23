@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"time"
@@ -31,6 +32,9 @@ type simpleTelnetClient struct {
 }
 
 func (t *simpleTelnetClient) Connect() error {
+	if t.conn != nil {
+		return fmt.Errorf("already connected")
+	}
 	conn, err := net.DialTimeout("tcp", t.address, t.timeout)
 	if err != nil {
 		return err
@@ -47,11 +51,17 @@ func (t *simpleTelnetClient) Close() error {
 }
 
 func (t *simpleTelnetClient) Send() error {
+	if t.conn == nil {
+		return fmt.Errorf("not connected")
+	}
 	_, err := io.Copy(t.conn, t.in)
 	return err
 }
 
 func (t *simpleTelnetClient) Receive() error {
+	if t.conn == nil {
+		return fmt.Errorf("not connected")
+	}
 	_, err := io.Copy(t.out, t.conn)
 	return err
 }
