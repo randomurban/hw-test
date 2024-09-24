@@ -18,8 +18,8 @@ func TestTelnetClient(t *testing.T) {
 		defer func() { require.NoError(t, l.Close()) }()
 
 		var wg sync.WaitGroup
-		wg.Add(2)
 
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
@@ -42,6 +42,7 @@ func TestTelnetClient(t *testing.T) {
 			require.Equal(t, "world\n", out.String())
 		}()
 
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
@@ -58,6 +59,25 @@ func TestTelnetClient(t *testing.T) {
 			n, err = conn.Write([]byte("world\n"))
 			require.NoError(t, err)
 			require.NotEqual(t, 0, n)
+		}()
+
+		wg.Wait()
+	})
+}
+
+func Test_simpleTelnetClient_Connect(t *testing.T) {
+	t.Run("invalid host name", func(t *testing.T) {
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			client := &simpleTelnetClient{
+				address: "invalid:12345",
+				timeout: time.Second,
+			}
+			err := client.Connect()
+			require.Error(t, err)
 		}()
 
 		wg.Wait()

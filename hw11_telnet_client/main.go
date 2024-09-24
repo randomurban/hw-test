@@ -23,12 +23,12 @@ func main() {
 	var err error
 	host = pflag.Arg(0)
 	if host == "" {
-		usageAndExit("Illegal args :empty host")
+		usageAndExit("Invalid args :empty host")
 	}
 	port = pflag.Arg(1)
 	_, err = strconv.Atoi(port)
 	if err != nil {
-		usageAndExit("Illegal args :bad port")
+		usageAndExit("Invalid args :bad port")
 	}
 	address := net.JoinHostPort(host, port)
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)

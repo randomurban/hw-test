@@ -65,6 +65,3 @@ func (t *simpleTelnetClient) Receive() error {
 	_, err := io.Copy(t.out, t.conn)
 	return err
 }
-
-// Place your code here.
-// P.S. Author's solution takes no more than 50 lines.
