@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -32,10 +31,10 @@ func main() {
 	}
 	address := net.JoinHostPort(host, port)
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
-	fmt.Printf("...Connecting to %s\n", address)
+	println("...Connecting to %s", address)
 	err = client.Connect()
 	if err != nil {
-		fmt.Printf("Failed to connect to %s: %s\n", address, err)
+		println("Failed to connect to %s: %s", address, err)
 		os.Exit(1)
 	}
 
@@ -45,7 +44,7 @@ func main() {
 	signal.Notify(sigCh, os.Interrupt)
 	go func() {
 		<-sigCh
-		fmt.Println("Interrupted by SIGINT")
+		println("Interrupted by SIGINT")
 		cancel()
 	}()
 
@@ -53,30 +52,30 @@ func main() {
 		err := client.Send()
 		defer cancel()
 		if err != nil {
-			fmt.Printf("Failed to send to %s: %s\n", address, err)
+			println("Failed to send to %s: %s", address, err)
 			return
 		}
-		fmt.Println("...EOF")
+		println("...EOF")
 	}()
 
 	go func() {
 		err := client.Receive()
 		defer cancel()
 		if err != nil {
-			fmt.Printf("Failed to receive from %s: %s\n", address, err)
+			println("Failed to receive from %s: %s", address, err)
 			return
 		}
-		fmt.Println("...Connection was closed by peer")
+		println("...Connection was closed by peer")
 	}()
 
 	<-ctx.Done()
 }
 
 func usageAndExit(msg string) {
-	fmt.Printf("Usage: %s --timeout duration host port\n", os.Args[0])
+	println("Usage: %s --timeout duration host port", os.Args[0])
 	pflag.PrintDefaults()
 	if msg != "" {
-		fmt.Println(msg)
+		println(msg)
 	}
 	os.Exit(1)
 }
