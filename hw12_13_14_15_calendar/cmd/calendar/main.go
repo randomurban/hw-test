@@ -2,28 +2,29 @@ package main
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/spf13/pflag"
+
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/app"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	pflag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
 }
 
 func main() {
-	flag.Parse()
+	pflag.Parse()
 
-	if flag.Arg(0) == "version" {
+	if pflag.Arg(0) == "version" {
 		printVersion()
 		return
 	}
@@ -42,7 +43,7 @@ func main() {
 
 	go func() {
 		<-ctx.Done()
-
+		logg.Info("calendar is stopping...")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 
