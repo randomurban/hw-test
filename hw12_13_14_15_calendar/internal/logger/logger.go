@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"time"
 )
 
 // error / warn / info / debug
@@ -39,22 +40,23 @@ func New(level string) *Logger {
 
 func (l *Logger) print(num int, msg string) {
 	if l.lev <= num {
-		fmt.Printf("%s: %s", l.level, msg)
+		t := time.Now()
+		fmt.Printf("%v %s %s\n", t.Format("2006-01-02 15:04:05"), l.level, msg)
 	}
 }
 
-func (l Logger) Debug(msg string) {
+func (l *Logger) Debug(msg string) {
 	l.print(1, msg)
 }
 
-func (l Logger) Info(msg string) {
+func (l *Logger) Info(msg string) {
 	l.print(2, msg)
 }
 
-func (l Logger) Warn(msg string) {
+func (l *Logger) Warn(msg string) {
 	l.print(3, msg)
 }
 
-func (l Logger) Error(msg string) {
+func (l *Logger) Error(msg string) {
 	l.print(4, msg)
 }
