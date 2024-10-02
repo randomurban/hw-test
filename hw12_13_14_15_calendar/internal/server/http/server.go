@@ -7,7 +7,11 @@ import (
 type Server struct { // TODO
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string)
 }
 
 type Application interface { // TODO
