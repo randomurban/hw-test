@@ -23,7 +23,7 @@ func New(logger Logger, storage storage.EventStorage) *EventService {
 	return &EventService{}
 }
 
-func (a *EventService) Create(ctx context.Context, event model.Event) (bool, error) {
+func (a *EventService) Create(ctx context.Context, event model.Event) (model.EventID, error) {
 	return a.storage.Create(ctx, event)
 }
 

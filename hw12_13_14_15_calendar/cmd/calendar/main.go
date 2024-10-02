@@ -7,8 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/model"
-
 	"github.com/spf13/pflag"
 
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
@@ -34,7 +32,7 @@ func main() {
 	config := NewConfig()
 	logg := logger.New(config.Logger.Level)
 
-	storage := memorystorage.New(model.NewEventID)
+	storage := memorystorage.New()
 	calendar := service.New(logg, storage)
 
 	server := internalhttp.NewServer(logg, calendar)
