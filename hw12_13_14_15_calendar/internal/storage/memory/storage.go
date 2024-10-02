@@ -13,18 +13,13 @@ import (
 
 type Storage struct {
 	store map[model.EventID]model.Event
-	genID func() model.EventID
 	mu    sync.RWMutex //nolint:unused
 }
 
-func New(genID func() model.EventID) *Storage {
+func New() *Storage {
 	store := make(map[model.EventID]model.Event)
-	if genID == nil {
-		genID = model.NewEventID
-	}
 	return &Storage{
 		store: store,
-		genID: genID,
 		mu:    sync.RWMutex{},
 	}
 }
@@ -35,7 +30,7 @@ func (s *Storage) Create(ctx context.Context, event model.Event) (model.EventID,
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if event.ID == "" {
-		event.ID = s.genID() // new id
+		event.ID = model.NewEventID() // new id
 	}
 	s.store[event.ID] = event
 
@@ -97,6 +92,6 @@ func TimeIsBetween(t, start, end time.Time) bool {
 
 func StartEnd(start *time.Time, end *time.Time) {
 	if start.After(*end) {
-		start, end = end, start
+		*start, *end = *end, *start
 	}
 }
