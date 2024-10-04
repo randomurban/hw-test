@@ -58,11 +58,11 @@ func TestStorage_Create(t *testing.T) {
 	t1 := time.Date(2010, 10, 20, 15, 10, 0, 0, time.UTC)
 	t2 := time.Date(2020, 10, 20, 15, 10, 0, 0, time.UTC)
 	event1 := model.Event{
-		ID:          "event1",
+		ID:          1,
 		Title:       "test",
 		Start:       t1,
 		End:         t2,
-		Owner:       "user1",
+		Owner:       1,
 		Description: "test event1",
 		NoticeTime:  time.Hour,
 	}
@@ -72,7 +72,7 @@ func TestStorage_Create(t *testing.T) {
 		want    model.EventID
 		wantErr bool
 	}{
-		{name: "simple", event: event1, want: "event1", wantErr: false},
+		{name: "simple", event: event1, want: 1, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -94,11 +94,11 @@ func TestStorage_Delete(t *testing.T) {
 	t1 := time.Date(2010, 10, 20, 15, 10, 0, 0, time.UTC)
 	t2 := time.Date(2020, 10, 20, 15, 10, 0, 0, time.UTC)
 	event1 := model.Event{
-		ID:          "",
+		ID:          0,
 		Title:       "test",
 		Start:       t1,
 		End:         t2,
-		Owner:       "user1",
+		Owner:       1,
 		Description: "test event1",
 		NoticeTime:  time.Hour,
 	}
@@ -137,11 +137,11 @@ func TestStorage_GetByID(t *testing.T) {
 	t1 := time.Date(2010, 10, 20, 15, 10, 0, 0, time.UTC)
 	t2 := time.Date(2020, 10, 20, 15, 10, 0, 0, time.UTC)
 	event1 := model.Event{
-		ID:          "event1",
+		ID:          1,
 		Title:       "test",
 		Start:       t1,
 		End:         t2,
-		Owner:       "user1",
+		Owner:       1,
 		Description: "test event1",
 		NoticeTime:  time.Hour,
 	}
@@ -151,7 +151,7 @@ func TestStorage_GetByID(t *testing.T) {
 		want    model.EventID
 		wantErr bool
 	}{
-		{name: "simple", event: event1, want: "event1", wantErr: false},
+		{name: "simple", event: event1, want: 1, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -181,11 +181,11 @@ func TestStorage_GetDayFromTo(t *testing.T) {
 	t1 := time.Date(2010, 10, 20, 15, 10, 0, 0, time.UTC)
 	t2 := time.Date(2020, 10, 20, 15, 10, 0, 0, time.UTC)
 	event1 := model.Event{
-		ID:          "",
+		ID:          0,
 		Title:       "test",
 		Start:       t1,
 		End:         t2,
-		Owner:       "user1",
+		Owner:       1,
 		Description: "test event1",
 		NoticeTime:  time.Hour,
 	}
@@ -224,11 +224,11 @@ func TestStorage_Update(t *testing.T) {
 	t1 := time.Date(2010, 10, 20, 15, 10, 0, 0, time.UTC)
 	t2 := time.Date(2020, 10, 20, 15, 10, 0, 0, time.UTC)
 	event1 := model.Event{
-		ID:          "",
+		ID:          0,
 		Title:       "test",
 		Start:       t1,
 		End:         t2,
-		Owner:       "user1",
+		Owner:       1,
 		Description: "test event1",
 		NoticeTime:  time.Hour,
 	}

@@ -13,7 +13,8 @@ import (
 
 type Storage struct {
 	store map[model.EventID]model.Event
-	mu    sync.RWMutex //nolint:unused
+	mu    sync.RWMutex
+	id    model.EventID
 }
 
 func New() *Storage {
@@ -21,7 +22,13 @@ func New() *Storage {
 	return &Storage{
 		store: store,
 		mu:    sync.RWMutex{},
+		id:    0,
 	}
+}
+
+func (s *Storage) newID() model.EventID {
+	s.id++
+	return s.id
 }
 
 var _ storage.EventStorage = (*Storage)(nil)
@@ -29,8 +36,8 @@ var _ storage.EventStorage = (*Storage)(nil)
 func (s *Storage) Create(ctx context.Context, event model.Event) (model.EventID, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if event.ID == "" {
-		event.ID = model.NewEventID() // new id
+	if event.ID == 0 {
+		event.ID = s.newID()
 	}
 	s.store[event.ID] = event
 
@@ -40,7 +47,7 @@ func (s *Storage) Create(ctx context.Context, event model.Event) (model.EventID,
 func (s *Storage) Update(ctx context.Context, id model.EventID, event model.Event) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, ok := s.store[event.ID]
+	_, ok := s.store[id]
 	if !ok {
 		return false, errors.New("event not found")
 	}

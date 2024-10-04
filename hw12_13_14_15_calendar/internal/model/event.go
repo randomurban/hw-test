@@ -2,13 +2,11 @@ package model
 
 import (
 	"time"
-
-	"github.com/rs/xid"
 )
 
 type (
-	EventID string
-	UserId  string
+	EventID int
+	UserId  int
 )
 
 type Event struct {
@@ -21,6 +19,7 @@ type Event struct {
 	NoticeTime  time.Duration // opt
 }
 
-func NewEventID() EventID {
-	return EventID(xid.New().String())
-}
+// Unique ID if EventID string
+//func NewEventID() EventID {
+//	return EventID(xid.New().String())
+//}
