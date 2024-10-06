@@ -13,12 +13,25 @@ import (
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
 	Logger LoggerConf
-	// TODO
+	Store  StoreConf
+	DB     DBConf
 }
 
 type LoggerConf struct {
 	Level string
-	// TODO
+}
+
+type StoreConf struct {
+	StoreType string
+}
+
+const (
+	StoreTypeSQL    = "SQL"
+	StoreTypeMemory = "MEMORY"
+)
+
+type DBConf struct {
+	DSN string
 }
 
 func NewConfig() Config {

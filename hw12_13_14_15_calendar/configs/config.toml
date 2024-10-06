@@ -4,3 +4,15 @@ level = "INFO"
 #level = "WARN"
 #level = "ERROR"
 
+[store]
+#storetype="MEMORY"
+storetype="SQL"
+
+[db]
+dsn="postgres://calendar:password@localhost:5432/calendar?sslmode=disable"
+#DBTYPE=postgres
+#DBUSER=calendar
+#DBPASSWORD=password
+#DBHOST=localhost
+#DBPORT=5432
+#DBNAME=calendar

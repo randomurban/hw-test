@@ -8,6 +8,8 @@ import (
 )
 
 type EventStorage interface {
+	Connect(ctx context.Context, dsn string) error
+	Close(ctx context.Context)
 	Create(ctx context.Context, event model.Event) (model.EventID, error)
 	Update(ctx context.Context, id model.EventID, event model.Event) (bool, error)
 	Delete(ctx context.Context, id model.EventID) (bool, error)

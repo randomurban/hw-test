@@ -33,7 +33,14 @@ func (s *Storage) newID() model.EventID {
 
 var _ storage.EventStorage = (*Storage)(nil)
 
-func (s *Storage) Create(ctx context.Context, event model.Event) (model.EventID, error) {
+func (s *Storage) Connect(_ context.Context, _ string) error {
+	return nil
+}
+
+func (s *Storage) Close(_ context.Context) {
+}
+
+func (s *Storage) Create(_ context.Context, event model.Event) (model.EventID, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if event.ID == 0 {
@@ -44,7 +51,7 @@ func (s *Storage) Create(ctx context.Context, event model.Event) (model.EventID,
 	return event.ID, nil
 }
 
-func (s *Storage) Update(ctx context.Context, id model.EventID, event model.Event) (bool, error) {
+func (s *Storage) Update(_ context.Context, id model.EventID, event model.Event) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	_, ok := s.store[id]
@@ -55,7 +62,7 @@ func (s *Storage) Update(ctx context.Context, id model.EventID, event model.Even
 	return true, nil
 }
 
-func (s *Storage) Delete(ctx context.Context, id model.EventID) (bool, error) {
+func (s *Storage) Delete(_ context.Context, id model.EventID) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	_, ok := s.store[id]
@@ -66,7 +73,7 @@ func (s *Storage) Delete(ctx context.Context, id model.EventID) (bool, error) {
 	return true, nil
 }
 
-func (s *Storage) GetByID(ctx context.Context, id model.EventID) (*model.Event, error) {
+func (s *Storage) GetByID(_ context.Context, id model.EventID) (*model.Event, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	event, ok := s.store[id]
@@ -76,7 +83,7 @@ func (s *Storage) GetByID(ctx context.Context, id model.EventID) (*model.Event, 
 	return &event, nil
 }
 
-func (s *Storage) GetDayFromTo(ctx context.Context, from time.Time, to time.Time) (*[]model.Event, error) {
+func (s *Storage) GetDayFromTo(_ context.Context, from time.Time, to time.Time) (*[]model.Event, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	result := make([]model.Event, 0)

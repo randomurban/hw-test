@@ -7,6 +7,9 @@ import (
 	"syscall"
 	"time"
 
+	storage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
+	sqlstorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/sql"
+
 	"github.com/spf13/pflag"
 
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
@@ -32,14 +35,27 @@ func main() {
 	config := NewConfig()
 	logg := logger.New(config.Logger.Level)
 
-	storage := memorystorage.New()
-	calendar := service.New(logg, storage)
-
-	server := internalhttp.NewServer(logg, calendar)
-
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
+
+	var store storage.EventStorage
+	switch config.Store.StoreType {
+	case StoreTypeSQL:
+		store = sqlstorage.New()
+		err := store.Connect(ctx, config.DB.DSN)
+		if err != nil {
+			logg.Error("failed to connect to database: " + err.Error())
+			os.Exit(1)
+		}
+	case StoreTypeMemory:
+		store = memorystorage.New()
+	default:
+		logg.Error("Unknown store type: " + config.Store.StoreType)
+	}
+	calendar := service.New(logg, store)
+
+	server := internalhttp.NewServer(logg, calendar)
 
 	go func() {
 		<-ctx.Done()
@@ -53,6 +69,8 @@ func main() {
 	}()
 
 	logg.Info("calendar is running...")
+
+	sample1(store, ctx, logg)
 
 	if err := server.Start(ctx); err != nil {
 		logg.Error("failed to start http server: " + err.Error())
