@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
-
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/model"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Storage struct {

@@ -6,7 +6,7 @@ import (
 
 type (
 	EventID int
-	UserId  int
+	UserID  int
 )
 
 type Event struct {
@@ -14,12 +14,12 @@ type Event struct {
 	Title       string
 	Start       time.Time
 	End         time.Time
-	Owner       UserId        // User ID
+	Owner       UserID        // User ID
 	Description string        // opt
 	NoticeTime  time.Duration // opt
 }
 
 // Unique ID if EventID string
-//func NewEventID() EventID {
-//	return EventID(xid.New().String())
-//}
+// func NewEventID() EventID {
+// 	return EventID(xid.New().String())
+// }

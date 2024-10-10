@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
-	"github.com/pelletier/go-toml/v2"
-	"github.com/spf13/viper"
-	"io"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 // При желании конфигурацию можно вынести в internal/config.
@@ -54,28 +53,8 @@ func NewConfig(configFile string) Config {
 	}
 
 	if err := viper.Unmarshal(&cfg); err != nil {
-		fmt.Printf("error unmarshaling config: ", err)
+		fmt.Printf("error unmarshaling config: %s", err)
 		os.Exit(1)
 	}
 	return cfg
-}
-
-func readToml(file string, res *Config) error {
-	fileToml, err := os.Open(file)
-	if err != nil {
-		return err
-	}
-	defer fileToml.Close()
-
-	data, err := io.ReadAll(fileToml)
-	if err != nil {
-		return err
-	}
-
-	err = toml.Unmarshal(data, res)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("config: %v\n", res)
-	return nil
 }

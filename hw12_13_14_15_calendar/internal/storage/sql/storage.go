@@ -6,10 +6,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
-
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/model"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Storage struct {

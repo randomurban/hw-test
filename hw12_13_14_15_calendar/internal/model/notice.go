@@ -8,5 +8,5 @@ type Notice struct {
 	ID    NoticeID
 	Title string
 	Start time.Time
-	User  UserId // User ID
+	User  UserID // User ID
 }

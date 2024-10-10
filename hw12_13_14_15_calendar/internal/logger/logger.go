@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// error / warn / info / debug
 const (
 	DEBUG = "DEBUG"
 	INFO  = "INFO"
