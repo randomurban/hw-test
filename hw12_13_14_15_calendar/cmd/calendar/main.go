@@ -18,13 +18,12 @@ import (
 	memorystorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
-var configFile string
-
-func init() {
-	pflag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
-}
-
 func main() {
+
+	var configFile string
+
+	pflag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+
 	pflag.Parse()
 
 	if pflag.Arg(0) == "version" {
@@ -32,7 +31,7 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
+	config := NewConfig(configFile)
 	logg := logger.New(config.Logger.Level)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),

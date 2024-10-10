@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
+	"github.com/pelletier/go-toml/v2"
+	"github.com/spf13/viper"
 	"io"
 	"os"
-
-	"github.com/pelletier/go-toml/v2"
+	"strings"
 )
 
 // При желании конфигурацию можно вынести в internal/config.
@@ -34,13 +36,28 @@ type DBConf struct {
 	DSN string
 }
 
-func NewConfig() Config {
-	var res Config
-	err := readToml(configFile, &res)
-	if err != nil {
-		panic(err)
+func NewConfig(configFile string) Config {
+	if err := godotenv.Load(".env"); err != nil {
+		fmt.Printf("Error loading .env file: %s", err)
 	}
-	return res
+	viper.SetEnvPrefix("CALENDAR")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
+	viper.SetConfigFile(configFile)
+	viper.SetConfigType("toml")
+
+	var cfg Config
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("error reading config file: %s", err)
+		os.Exit(1)
+	}
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		fmt.Printf("error unmarshaling config: ", err)
+		os.Exit(1)
+	}
+	return cfg
 }
 
 func readToml(file string, res *Config) error {
