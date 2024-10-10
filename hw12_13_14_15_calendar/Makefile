@@ -1,3 +1,5 @@
+include .env
+MIGRATIONS = "./migrations"
 BIN := "./bin/calendar"
 DOCKER_IMG="calendar:develop"
 
@@ -8,7 +10,7 @@ build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
 run: build
-	$(BIN) -config ./configs/config.toml
+	$(BIN) --config ./configs/config.toml
 
 build-img:
 	docker build \
@@ -31,4 +33,10 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build run build-img run-img version test lint
+local-migration-up:
+	migrate -database $(CALENDAR_DSN) -path $(MIGRATIONS) up
+
+local-migration-down:
+	migrate -database $(CALENDAR_DSN) -path $(MIGRATIONS) down
+
+.PHONY: build run build-img run-img version test lint local-migration-up local-migration-down
