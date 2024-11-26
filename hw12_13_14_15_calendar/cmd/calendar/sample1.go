@@ -11,7 +11,7 @@ import (
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
 )
 
-func sample1(ctx context.Context, store storage.EventStorage, logg *logger.Logger) {
+func sample1(ctx context.Context, store storage.EventStorage, logg logger.Logger) {
 	loc, _ := time.LoadLocation("Asia/Omsk")
 	t1 := time.Date(2020, 10, 20, 15, 10, 0, 0, time.UTC)
 	t2 := time.Date(2020, 10, 20, 23, 10, 0, 0, loc)

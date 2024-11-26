@@ -1,61 +1,56 @@
 package logger
 
 import (
-	"fmt"
-	"time"
+	"log/slog"
+	"os"
+	"strings"
 )
+
+type Logger interface {
+	Info(msg string, args ...any)
+	Debug(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
+}
 
 const (
 	DEBUG = "DEBUG"
 	INFO  = "INFO"
 	WARN  = "WARN"
 	ERROR = "ERROR"
+	TEXT  = "TEXT"
+	JSON  = "JSON"
 )
 
-type Logger struct {
-	level string
-	lev   int
-}
-
-func New(level string) *Logger {
-	var lev int
-	switch level {
+func New(level string, logType string) Logger {
+	var logLevel slog.Level
+	switch strings.ToUpper(level) {
 	case DEBUG:
-		lev = 1
+		logLevel = slog.LevelDebug
 	case INFO:
-		lev = 2
+		logLevel = slog.LevelInfo
 	case WARN:
-		lev = 3
+		logLevel = slog.LevelWarn
 	case ERROR:
-		lev = 4
+		logLevel = slog.LevelError
 	default:
-		lev = 0 // print Any
+		logLevel = slog.LevelInfo
 	}
-	return &Logger{
-		level: level,
-		lev:   lev,
+	logOptions := slog.HandlerOptions{
+		AddSource:   false,
+		Level:       logLevel,
+		ReplaceAttr: nil,
 	}
-}
+	var logger *slog.Logger
 
-func (l *Logger) print(num int, msg string) {
-	if l.lev <= num {
-		t := time.Now()
-		fmt.Printf("%v %s %s\n", t.Format("2006-01-02 15:04:05"), l.level, msg)
+	switch strings.ToUpper(logType) {
+	case TEXT:
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &logOptions))
+	case JSON:
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, &logOptions))
+	default:
+		logger = slog.Default() // Simple default logger
 	}
-}
-
-func (l *Logger) Debug(msg string) {
-	l.print(1, msg)
-}
-
-func (l *Logger) Info(msg string) {
-	l.print(2, msg)
-}
-
-func (l *Logger) Warn(msg string) {
-	l.print(3, msg)
-}
-
-func (l *Logger) Error(msg string) {
-	l.print(4, msg)
+	slog.SetDefault(logger)
+	return logger
 }

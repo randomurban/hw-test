@@ -1,9 +1,10 @@
-package main
+package config
 
 import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
@@ -16,10 +17,17 @@ type Config struct {
 	Logger LoggerConf
 	Store  StoreConf
 	DB     DBConf
+	HTTP   HTTPConf
+}
+
+type HTTPConf struct {
+	Addr              string
+	ReadHeaderTimeout time.Duration
 }
 
 type LoggerConf struct {
 	Level string
+	Type  string
 }
 
 type StoreConf struct {
@@ -36,8 +44,10 @@ type DBConf struct {
 }
 
 func NewConfig(configFile string) Config {
-	if err := godotenv.Load(".env"); err != nil {
-		fmt.Printf("Error loading .env file: %s", err)
+	if _, err := os.Stat(".env"); err == nil {
+		if err := godotenv.Load(".env"); err != nil {
+			fmt.Printf("Error loading .env file: %s", err)
+		}
 	}
 	viper.SetEnvPrefix("CALENDAR")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
