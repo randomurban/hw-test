@@ -10,11 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStorage(t *testing.T) {
-	t.Run("memory store", func(t *testing.T) {
-	})
-}
-
 func TestStartEnd(t *testing.T) {
 	type args struct {
 		start *time.Time

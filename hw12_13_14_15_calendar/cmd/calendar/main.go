@@ -32,7 +32,6 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
 
 	var store storage.EventStorage
 	switch cfg.Store.StoreType {
@@ -48,6 +47,7 @@ func main() {
 	default:
 		logg.Error("Unknown store type: " + cfg.Store.StoreType)
 	}
+	defer cancel()
 	calendar := event.New(logg, store)
 
 	server := internalhttp.NewServer(cfg, logg, calendar)
@@ -64,8 +64,6 @@ func main() {
 	}()
 
 	logg.Info("calendar is running...")
-
-	// sample1(ctx, store, logg)
 
 	if err := server.Start(ctx); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {

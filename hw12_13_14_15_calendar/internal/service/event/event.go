@@ -10,11 +10,15 @@ import (
 )
 
 type Event struct {
+	logger  logger.Logger
 	storage storage.EventStorage
 }
 
 func New(logger logger.Logger, storage storage.EventStorage) *Event {
-	return &Event{}
+	return &Event{
+		logger:  logger,
+		storage: storage,
+	}
 }
 
 func (a *Event) Create(ctx context.Context, event model.Event) (model.EventID, error) {
