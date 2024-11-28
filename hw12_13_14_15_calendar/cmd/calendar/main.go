@@ -2,47 +2,59 @@ package main
 
 import (
 	"context"
-	"flag"
+	"errors"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/config"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/service/event"
+	storage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
+	memorystorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/spf13/pflag"
 )
 
-var configFile string
-
-func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
-}
-
 func main() {
-	flag.Parse()
-
-	if flag.Arg(0) == "version" {
+	var configFile string
+	pflag.StringVar(&configFile, "cfg", "./configs/config.toml", "Path to configuration file")
+	pflag.Parse()
+	if pflag.Arg(0) == "version" {
 		printVersion()
 		return
 	}
-
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
-
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
-
-	server := internalhttp.NewServer(logg, calendar)
+	cfg := config.NewConfig(configFile)
+	logg := logger.New(cfg.Logger.Level, cfg.Logger.Type)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+
+	var store storage.EventStorage
+	switch cfg.Store.StoreType {
+	case config.StoreTypeSQL:
+		store = sqlstorage.New()
+		err := store.Connect(ctx, cfg.DB.DSN)
+		if err != nil {
+			logg.Error("failed to connect to database: " + err.Error())
+			os.Exit(1)
+		}
+	case config.StoreTypeMemory:
+		store = memorystorage.New()
+	default:
+		logg.Error("Unknown store type: " + cfg.Store.StoreType)
+	}
 	defer cancel()
+	calendar := event.New(logg, store)
+
+	server := internalhttp.NewServer(cfg, logg, calendar)
 
 	go func() {
 		<-ctx.Done()
-
+		logg.Info("calendar is stopping...")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 
@@ -54,8 +66,9 @@ func main() {
 	logg.Info("calendar is running...")
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		if !errors.Is(err, http.ErrServerClosed) {
+			logg.Error("http server: " + err.Error())
+		}
 		cancel()
-		os.Exit(1) //nolint:gocritic
 	}
 }

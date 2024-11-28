@@ -1,0 +1,22 @@
+[logger]
+#level = "DEBUG"
+#level = "info"
+level = "warn"
+#level = "ERROR"
+
+type = "Text"
+#type = "JSON"
+#type = "Simple"
+
+
+[store]
+storetype = "MEMORY"
+#storetype = "SQL"
+
+[db]
+dsn = "postgres://calendar:password@localhost:5432/calendar?sslmode=disable"
+
+
+[http]
+addr = "0.0.0.0:8080"
+ReadHeaderTimeout = "5s"
