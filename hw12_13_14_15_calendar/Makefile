@@ -5,6 +5,31 @@ DOCKER_IMG="calendar:develop"
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
+LOCAL_BIN:=$(CURDIR)/bin
+
+.PHONY: install-deps
+install-deps:
+	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.35.2
+	GOBIN=$(LOCAL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
+	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+
+.PHONY: generate
+generate:
+	rm -rf internal/pb
+	mkdir -p internal/pb
+
+	protoc \
+		--proto_path=api/ \
+		--go_out=internal/pb \
+		--go_opt=paths=source_relative \
+		--plugin=protoc-gen-go=bin/protoc-gen-go \
+		--go-grpc_out=internal/pb \
+		--go-grpc_opt=paths=source_relative \
+        --plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+        api/*.proto
+
+
 .PHONY: build 
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar

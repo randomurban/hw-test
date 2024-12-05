@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
-	"time"
 
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/grpc_server"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/http_server"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/service/event"
 	storage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
@@ -21,7 +22,7 @@ import (
 
 func main() {
 	var configFile string
-	pflag.StringVar(&configFile, "cfg", "./configs/config.toml", "Path to configuration file")
+	pflag.StringVar(&configFile, "config", "./configs/config.toml", "Path to configuration file")
 	pflag.Parse()
 	if pflag.Arg(0) == "version" {
 		printVersion()
@@ -50,25 +51,35 @@ func main() {
 	defer cancel()
 	calendar := event.New(logg, store)
 
-	server := internalhttp.NewServer(cfg, logg, calendar)
+	httpSrv := http_server.NewServer(cfg, logg, calendar)
+
+	grpcSrv := grpc_server.NewServer(cfg, logg, calendar)
+
+	var wg sync.WaitGroup
+	wg.Add(2)
 
 	go func() {
-		<-ctx.Done()
-		logg.Info("calendar is stopping...")
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
+		defer wg.Done()
+		logg.Info("http calendar is running...")
 
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+		if err := httpSrv.Start(ctx); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				logg.Error("http httpSrv: " + err.Error())
+			}
+			cancel()
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	go func() {
+		defer wg.Done()
+		logg.Info("grpc calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
-		if !errors.Is(err, http.ErrServerClosed) {
-			logg.Error("http server: " + err.Error())
+		if err := grpcSrv.Start(ctx); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				logg.Error("http httpSrv: " + err.Error())
+			}
+			cancel()
 		}
-		cancel()
-	}
+	}()
+	wg.Wait()
 }

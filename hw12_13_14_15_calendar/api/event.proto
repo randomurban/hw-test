@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package event;
+
+option go_package="github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/pb;pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+message Event {
+  int32 id = 1;
+  string title = 2;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
+  int32 owner = 5;
+  string description = 6;
+  google.protobuf.Duration notice_time = 7;
+}
+
+message Notice {
+  int32 id = 1;
+  string title = 2;
+  google.protobuf.Timestamp start = 3;
+  int32 user_id = 4;
+}
+
+service EventService {
+  rpc Create (CreateEventRequest) returns (CreateEventResponse) {}
+  rpc Update (UpdateEventRequest) returns (UpdateEventResponse) {}
+  rpc Delete (DeleteEventRequest) returns (DeleteEventResponse) {}
+  rpc GetByID (GetByIDEventRequest) returns (GetByIDEventResponse) {}
+  rpc GetDay (GetDayEventRequest) returns (GetDayEventResponse) {}
+  rpc GetWeek (GetWeekEventRequest) returns (GetWeekEventResponse) {}
+  rpc GetMonth (GetMonthEventRequest) returns (GetMonthEventResponse) {}
+}
+
+message CreateEventRequest {
+  Event event = 1;
+}
+
+message CreateEventResponse {
+  int32 id = 1;
+}
+
+message UpdateEventRequest {
+  Event event = 1;
+}
+
+message UpdateEventResponse {
+  bool ok = 1;
+}
+
+
+message DeleteEventRequest {
+  int32 id = 1;
+}
+
+message DeleteEventResponse {
+  bool ok = 1;
+}
+
+
+message GetByIDEventRequest {
+  int32 id = 1;
+}
+
+message GetByIDEventResponse {
+  Event event = 1;
+}
+
+
+message GetDayEventRequest {
+  google.protobuf.Timestamp start = 1;
+}
+
+message GetDayEventResponse {
+  repeated Event events = 1;
+}
+
+
+message GetWeekEventRequest {
+  google.protobuf.Timestamp start = 1;
+}
+
+message GetWeekEventResponse {
+  repeated Event events = 1;
+}
+
+
+message GetMonthEventRequest {
+  google.protobuf.Timestamp start = 1;
+}
+
+message GetMonthEventResponse {
+  repeated Event events = 1;
+}
+

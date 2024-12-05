@@ -1,9 +1,10 @@
-package internalhttp
+package http_server
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
@@ -27,10 +28,22 @@ func NewServer(cfg config.Config, logger logger.Logger, service service.Event) *
 	}
 }
 
-func (s *Server) Start(_ context.Context) error {
+func (s *Server) Start(ctx context.Context) error {
+	go func() {
+		<-ctx.Done()
+		s.logger.Info("calendar is stopping...")
+		ctxStop, cancel := context.WithTimeout(context.Background(), time.Second*3)
+		defer cancel()
+
+		if err := s.Stop(ctxStop); err != nil {
+			s.logger.Error("failed to stop http: " + err.Error())
+		}
+	}()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.helloHandler)
 	s.httpServer.Handler = s.loggingMiddleware(mux)
+	s.logger.Info("HTTP server started ", "addr", s.httpServer.Addr)
 	return s.httpServer.ListenAndServe()
 }
 
