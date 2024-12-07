@@ -2,7 +2,9 @@ syntax = "proto3";
 
 package event;
 
-option go_package="github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/pb;pb";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/pb;pb";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -25,13 +27,43 @@ message Notice {
 }
 
 service EventService {
-  rpc Create (CreateEventRequest) returns (CreateEventResponse) {}
-  rpc Update (UpdateEventRequest) returns (UpdateEventResponse) {}
-  rpc Delete (DeleteEventRequest) returns (DeleteEventResponse) {}
-  rpc GetByID (GetByIDEventRequest) returns (GetByIDEventResponse) {}
-  rpc GetDay (GetDayEventRequest) returns (GetDayEventResponse) {}
-  rpc GetWeek (GetWeekEventRequest) returns (GetWeekEventResponse) {}
-  rpc GetMonth (GetMonthEventRequest) returns (GetMonthEventResponse) {}
+  rpc Create (CreateEventRequest) returns (CreateEventResponse) {
+    option (google.api.http) = {
+      post: "/events"
+      body: "*"
+    };
+  }
+  rpc Update (UpdateEventRequest) returns (UpdateEventResponse) {
+    option (google.api.http) = {
+      patch: "/events"
+      body: "*"
+    };
+  }
+  rpc Delete (DeleteEventRequest) returns (DeleteEventResponse) {
+    option (google.api.http) = {
+      delete: "/events/{id}"
+    };
+  }
+  rpc GetByID (GetByIDEventRequest) returns (GetByIDEventResponse) {
+    option (google.api.http) = {
+      get: "/events/{id}"
+    };
+  }
+  rpc GetDay (GetDayEventRequest) returns (GetDayEventResponse) {
+    option (google.api.http) = {
+      get: "/day/{start}"
+    };
+  }
+  rpc GetWeek (GetWeekEventRequest) returns (GetWeekEventResponse) {
+    option (google.api.http) = {
+      get: "/week/{start}"
+    };
+  }
+  rpc GetMonth (GetMonthEventRequest) returns (GetMonthEventResponse) {
+    option (google.api.http) = {
+      get: "/month/{start}"
+    };
+  }
 }
 
 message CreateEventRequest {

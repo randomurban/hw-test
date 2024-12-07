@@ -11,8 +11,8 @@ LOCAL_BIN:=$(CURDIR)/bin
 install-deps:
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.35.2
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
-	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
-	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.24.0
+	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.24.0
 
 .PHONY: generate
 generate:
@@ -27,6 +27,8 @@ generate:
 		--go-grpc_out=internal/pb \
 		--go-grpc_opt=paths=source_relative \
         --plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+        --grpc-gateway_out=internal/pb --grpc-gateway_opt=paths=source_relative \
+        --plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \
         api/*.proto
 
 
