@@ -1,8 +1,7 @@
-package http_server
+package httpserver
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -47,8 +46,6 @@ func (s *Server) Start(ctx context.Context) error {
 	}()
 
 	mux := runtime.NewServeMux()
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("/", s.helloHandler)
 
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -66,9 +63,4 @@ func (s *Server) Start(ctx context.Context) error {
 
 func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
-}
-
-func (s *Server) helloHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Hello %s", r.RemoteAddr)
 }

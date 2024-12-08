@@ -11,8 +11,8 @@ import (
 
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
-	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/grpc_server"
-	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/http_server"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/grpcserver"
+	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/httpserver"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/service/event"
 	storage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
@@ -51,9 +51,9 @@ func main() {
 	defer cancel()
 	calendar := event.New(logg, store)
 
-	httpSrv := http_server.NewServer(cfg, logg, calendar)
+	httpSrv := httpserver.NewServer(cfg, logg, calendar)
 
-	grpcSrv := grpc_server.NewServer(cfg, logg, calendar)
+	grpcSrv := grpcserver.NewServer(cfg, logg, calendar)
 
 	var wg sync.WaitGroup
 	wg.Add(2)

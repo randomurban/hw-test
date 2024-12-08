@@ -1,4 +1,4 @@
-package grpc_server
+package grpcserver
 
 import (
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/model"
