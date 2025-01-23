@@ -71,7 +71,9 @@ func (i *Implementation) GetWeek(ctx context.Context, req *pb.GetWeekEventReques
 	return &pb.GetWeekEventResponse{Events: converter.EventsToPB(events)}, nil
 }
 
-func (i *Implementation) GetMonth(ctx context.Context, req *pb.GetMonthEventRequest) (*pb.GetMonthEventResponse, error) {
+func (i *Implementation) GetMonth(
+	ctx context.Context, req *pb.GetMonthEventRequest,
+) (*pb.GetMonthEventResponse, error) {
 	events, err := i.service.GetDay(ctx, req.Start.AsTime())
 	if err != nil {
 		return nil, err

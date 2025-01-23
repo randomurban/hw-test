@@ -27,11 +27,7 @@ func TestCreate(t *testing.T) {
 		ctx context.Context
 		req *pb.CreateEventRequest
 	}
-
-	var (
-		ctx = context.Background()
-	)
-
+	ctx := context.Background()
 	tests := []struct {
 		name string
 		args args
@@ -92,5 +88,4 @@ func TestCreate(t *testing.T) {
 			assert.Equal(t, tt.want, newID)
 		})
 	}
-
 }
