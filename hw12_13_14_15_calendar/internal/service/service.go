@@ -7,6 +7,8 @@ import (
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/model"
 )
 
+//go:generate mockery --name Event --with-expecter
+
 type Event interface {
 	Create(ctx context.Context, event model.Event) (model.EventID, error)
 	Update(ctx context.Context, id model.EventID, event model.Event) (bool, error)

@@ -9,7 +9,6 @@ import (
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/pb"
-	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -17,11 +16,11 @@ import (
 type Server struct {
 	httpServer *http.Server
 	logger     logger.Logger
-	service    service.Event
+	service    pb.EventServiceServer
 	cfg        config.Config
 }
 
-func NewServer(cfg config.Config, logger logger.Logger, service service.Event) *Server {
+func NewServer(cfg config.Config, logger logger.Logger, service pb.EventServiceServer) *Server {
 	return &Server{
 		logger: logger,
 		httpServer: &http.Server{

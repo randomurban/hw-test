@@ -14,6 +14,10 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.24.0
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.24.0
 
+.PHONY: install-mockery
+install-mockery:
+	go install github.com/vektra/mockery/v2@v2.50.0
+
 .PHONY: generate
 generate:
 	rm -rf internal/pb

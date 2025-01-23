@@ -9,6 +9,7 @@ import (
 	"sync"
 	"syscall"
 
+	implementation "github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/api/event"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/logger"
 	"github.com/randomurban/hw-test/hw12_13_14_15_calendar/internal/server/grpcserver"
@@ -49,11 +50,12 @@ func main() {
 		logg.Error("Unknown store type: " + cfg.Store.StoreType)
 	}
 	defer cancel()
-	calendar := event.New(logg, store)
+	service := event.New(logg, store)
 
-	httpSrv := httpserver.NewServer(cfg, logg, calendar)
+	impl := implementation.NewImplementation(service)
 
-	grpcSrv := grpcserver.NewServer(cfg, logg, calendar)
+	httpSrv := httpserver.NewServer(cfg, logg, impl)
+	grpcSrv := grpcserver.NewServer(cfg, logg, impl)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
