@@ -5,8 +5,8 @@ import (
 )
 
 type (
-	EventID int
-	UserID  int
+	EventID int32
+	UserID  int32
 )
 
 type Event struct {

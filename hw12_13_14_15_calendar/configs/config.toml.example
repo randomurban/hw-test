@@ -20,3 +20,6 @@ dsn = "postgres://calendar:password@localhost:5432/calendar?sslmode=disable"
 [http]
 addr = "0.0.0.0:8080"
 ReadHeaderTimeout = "5s"
+
+[grpc]
+addr = "0.0.0.0:50051"

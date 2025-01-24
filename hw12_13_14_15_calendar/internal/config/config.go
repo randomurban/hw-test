@@ -18,6 +18,11 @@ type Config struct {
 	Store  StoreConf
 	DB     DBConf
 	HTTP   HTTPConf
+	GRPC   GRPCConfig
+}
+
+type GRPCConfig struct {
+	Addr string
 }
 
 type HTTPConf struct {
